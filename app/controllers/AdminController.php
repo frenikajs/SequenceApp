@@ -6,12 +6,14 @@ class AdminController
     private SequenceModel   $seqModel;
     private ClueModel       $clueModel;
     private CluePageModel   $pageModel;
+    private PuzzlePageModel $puzzleModel;
 
     public function __construct()
     {
-        $this->seqModel  = new SequenceModel();
-        $this->clueModel = new ClueModel();
-        $this->pageModel = new CluePageModel();
+        $this->seqModel    = new SequenceModel();
+        $this->clueModel   = new ClueModel();
+        $this->pageModel   = new CluePageModel();
+        $this->puzzleModel = new PuzzlePageModel();
     }
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -140,7 +142,7 @@ class AdminController
         $seq = $this->seqModel->findById($id) ?: notFound();
 
         // Remove media files
-        foreach (['intro_file_path', 'finale_file_path'] as $col) {
+        foreach (['intro_file_path', 'intro_hint_file_path', 'finale_file_path'] as $col) {
             if ($seq[$col]) {
                 FileUpload::delete($seq[$col]);
             }
@@ -167,6 +169,20 @@ class AdminController
         redirect('/admin/sequences');
     }
 
+    // ── Reset statistics ──────────────────────────────────────────────────────
+
+    public function resetStats(int $id): void
+    {
+        requireAdmin();
+        validate_csrf();
+        if (!$this->seqModel->findById($id)) {
+            jsonResponse(['success' => false, 'error' => 'Sequence not found.'], 404);
+        }
+        $this->seqModel->resetStats($id);
+        (new ProgressModel())->resetAllForSequence($id);
+        jsonResponse(['success' => true]);
+    }
+
     // ── Duplicate ─────────────────────────────────────────────────────────────
 
     public function duplicateSequence(int $id): void
@@ -191,12 +207,14 @@ class AdminController
         $seq    = $this->seqModel->findById($seqId) ?: notFound();
         $clues  = $this->clueModel->getBySequenceId($seqId);
         $clueIds = array_column($clues, 'id');
-        $pages  = $this->pageModel->getMapForClues(array_map('intval', $clueIds));
+        $pages   = $this->pageModel->getMapForClues(array_map('intval', $clueIds));
+        $puzzles = $this->puzzleModel->getMapForClues(array_map('intval', $clueIds));
 
         view('admin.sequences.clues', [
             'sequence' => $seq,
             'clues'    => $clues,
             'pages'    => $pages,
+            'puzzles'  => $puzzles,
             'flash'    => getFlash(),
         ]);
     }
@@ -217,11 +235,13 @@ class AdminController
         }
 
         $data = [
-            'sequence_id' => $seqId,
-            'title'       => Security::sanitizeString($_POST['title'] ?? ''),
-            'content'     => $_POST['content'] ?? null,
-            'access_code' => Security::sanitizeString($_POST['access_code']),
-            'hint_text'   => $_POST['hint_text'] ?? null,
+            'sequence_id'    => $seqId,
+            'title'          => Security::sanitizeString($_POST['title'] ?? ''),
+            'content'        => $_POST['content'] ?? null,
+            'reward_content' => $_POST['reward_content'] ?? null,
+            'access_code'    => Security::sanitizeString($_POST['access_code']),
+            'instruction'    => Security::sanitizeString($_POST['clue_instruction'] ?? '') ?: null,
+            'hint_text'      => $_POST['hint_text'] ?? null,
         ];
 
         $clueId = $this->clueModel->create($data);
@@ -245,12 +265,14 @@ class AdminController
         }
 
         $data = [
-            'title'       => Security::sanitizeString($_POST['title'] ?? ''),
-            'content'     => $_POST['content'] ?? null,
-            'access_code' => Security::sanitizeString($_POST['access_code']),
-            'hint_text'   => $_POST['hint_text'] ?? null,
-            'file_caption'      => Security::sanitizeString($_POST['file_caption'] ?? ''),
-            'hint_caption'      => Security::sanitizeString($_POST['hint_caption'] ?? ''),
+            'title'          => Security::sanitizeString($_POST['title'] ?? ''),
+            'content'        => $_POST['content'] ?? null,
+            'reward_content' => $_POST['reward_content'] ?? null,
+            'access_code'    => Security::sanitizeString($_POST['access_code']),
+            'instruction'    => Security::sanitizeString($_POST['clue_instruction'] ?? '') ?: null,
+            'hint_text'      => $_POST['hint_text'] ?? null,
+            'file_caption'   => Security::sanitizeString($_POST['file_caption'] ?? ''),
+            'hint_caption'   => Security::sanitizeString($_POST['hint_caption'] ?? ''),
         ];
 
         $this->clueModel->update($clueId, $data);
@@ -302,13 +324,23 @@ class AdminController
         }
 
         $data['description']          = $post['description'] ?? null;
-        $data['type']                 = in_array($post['type'] ?? '', ['sequential', 'open'])
+        $data['type']                 = in_array($post['type'] ?? '', ['sequential', 'open', 'gameboard'], true)
                                         ? $post['type'] : 'sequential';
         $data['start_code']           = Security::sanitizeString($post['start_code'] ?? '');
+        $data['intro_access_code']    = Security::sanitizeString($post['intro_access_code'] ?? '') ?: null;
         $data['finale_code']          = Security::sanitizeString($post['finale_code'] ?? '') ?: null;
         $data['finale_requires_code'] = !empty($post['finale_requires_code']) ? 1 : 0;
         $data['introduction_content'] = $post['introduction_content'] ?? null;
+        $data['intro_instruction']    = Security::sanitizeString($post['intro_instruction'] ?? '') ?: null;
+        $data['intro_hint_text']      = $post['intro_hint_text'] ?? null;
+        $data['intro_hint_caption']   = Security::sanitizeString($post['intro_hint_caption'] ?? '') ?: null;
         $data['finale_content']       = $post['finale_content'] ?? null;
+        $data['finale_instruction']   = Security::sanitizeString($post['finale_instruction'] ?? '') ?: null;
+        $data['finale_hint_text']     = $post['finale_hint_text'] ?? null;
+        $data['finale_hint_caption']  = Security::sanitizeString($post['finale_hint_caption'] ?? '') ?: null;
+        $data['solution_content']     = $post['solution_content'] ?? null;
+        $data['solution_caption']     = Security::sanitizeString($post['solution_caption'] ?? '') ?: null;
+        $data['thank_you_content']    = $post['thank_you_content'] ?? null;
         $data['published']            = !empty($post['published']) ? 1 : 0;
         $data['expires_at']           = !empty($post['expires_at']) ? $post['expires_at'] : null;
 
@@ -357,7 +389,7 @@ class AdminController
     {
         $uploader = new FileUpload();
 
-        foreach (['intro' => 'intro_file', 'finale' => 'finale_file'] as $slot => $fileKey) {
+        foreach (['intro' => 'intro_file', 'intro_hint' => 'intro_hint_file', 'finale' => 'finale_file', 'finale_hint' => 'finale_hint_file', 'solution' => 'solution_file'] as $slot => $fileKey) {
             if (empty($_FILES[$fileKey]['name'])) {
                 continue;
             }

@@ -68,6 +68,14 @@ class ProgressModel
         );
     }
 
+    public function resetAllForSequence(int $sequenceId): bool
+    {
+        return $this->db->execute(
+            'DELETE FROM sequence_progress WHERE sequence_id = ?',
+            [$sequenceId]
+        );
+    }
+
     public function getAnalytics(int $sequenceId): array
     {
         $row = $this->db->fetch(

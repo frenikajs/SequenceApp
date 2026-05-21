@@ -27,6 +27,9 @@
       <a href="<?= url('admin/sequences/create') ?>" class="nav-item <?= ($activeNav ?? '') === 'create' ? 'active' : '' ?>">
         <span class="nav-icon">➕</span> New Sequence
       </a>
+      <a href="<?= url('admin/guide') ?>" class="nav-item <?= ($activeNav ?? '') === 'guide' ? 'active' : '' ?>">
+        <span class="nav-icon">❓</span> How to Play Guide
+      </a>
     </nav>
     <div class="sidebar-footer">
       <span class="sidebar-user">👤 <?= e($_SESSION['admin_username'] ?? '') ?></span>

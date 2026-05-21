@@ -43,16 +43,18 @@ class ClueModel
 
         $this->db->execute(
             'INSERT INTO clues
-             (sequence_id, title, content, access_code,
+             (sequence_id, title, content, reward_content, access_code, instruction,
               file_path, file_type, original_filename, file_size, mime_type, file_caption,
               hint_text, hint_file_path, hint_file_type, hint_original_filename,
               hint_file_size, hint_mime_type, hint_caption, sort_order)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $data['sequence_id'],
                 $data['title']             ?? '',
                 $data['content']           ?? null,
+                $data['reward_content']    ?? null,
                 $data['access_code'],
+                $data['instruction']       ?? null,
                 $data['file_path']         ?? null,
                 $data['file_type']         ?? null,
                 $data['original_filename'] ?? null,
@@ -75,7 +77,7 @@ class ClueModel
     public function update(int $id, array $data): bool
     {
         $cols = [
-            'title','content','access_code',
+            'title','content','reward_content','access_code','instruction',
             'file_path','file_type','original_filename','file_size','mime_type','file_caption',
             'hint_text','hint_file_path','hint_file_type','hint_original_filename',
             'hint_file_size','hint_mime_type','hint_caption',

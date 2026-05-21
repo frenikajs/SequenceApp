@@ -71,19 +71,28 @@ class SequenceModel
     {
         $this->db->execute(
             'INSERT INTO sequences
-             (title, slug, description, type, start_code, finale_code, finale_requires_code,
-              introduction_content, finale_content, published, expires_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+             (title, slug, description, type, start_code, intro_access_code, finale_code,
+              finale_requires_code, introduction_content, intro_instruction, intro_hint_text,
+              finale_content, finale_instruction, finale_hint_text, solution_content,
+              thank_you_content, published, expires_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $data['title'],
                 $data['slug'],
                 $data['description'] ?? null,
                 $data['type'] ?? 'sequential',
                 $data['start_code'],
+                $data['intro_access_code'] ?? null,
                 $data['finale_code'] ?? null,
                 (int)($data['finale_requires_code'] ?? 1),
                 $data['introduction_content'] ?? null,
+                $data['intro_instruction'] ?? null,
+                $data['intro_hint_text'] ?? null,
                 $data['finale_content'] ?? null,
+                $data['finale_instruction'] ?? null,
+                $data['finale_hint_text'] ?? null,
+                $data['solution_content'] ?? null,
+                $data['thank_you_content'] ?? null,
                 (int)($data['published'] ?? 0),
                 $data['expires_at'] ?? null,
             ]
@@ -101,8 +110,9 @@ class SequenceModel
 
     public function update(int $id, array $data): bool
     {
-        $cols   = ['title','slug','description','type','start_code','finale_code',
-                   'finale_requires_code','introduction_content','finale_content',
+        $cols   = ['title','slug','description','type','start_code','intro_access_code','finale_code',
+                   'finale_requires_code','introduction_content','intro_instruction','intro_hint_text',
+                   'finale_content','finale_instruction','finale_hint_text','solution_content','thank_you_content',
                    'published','expires_at'];
         $fields = [];
         $params = [];
@@ -117,8 +127,14 @@ class SequenceModel
         $mediaFields = [
             'intro_file_path','intro_file_type','intro_original_filename',
             'intro_file_size','intro_mime_type','intro_caption',
+            'intro_hint_file_path','intro_hint_file_type','intro_hint_original_filename',
+            'intro_hint_file_size','intro_hint_mime_type','intro_hint_caption',
             'finale_file_path','finale_file_type','finale_original_filename',
             'finale_file_size','finale_mime_type','finale_caption',
+            'finale_hint_file_path','finale_hint_file_type','finale_hint_original_filename',
+            'finale_hint_file_size','finale_hint_mime_type','finale_hint_caption',
+            'solution_file_path','solution_file_type','solution_original_filename',
+            'solution_file_size','solution_mime_type','solution_caption',
         ];
         foreach ($mediaFields as $col) {
             if (array_key_exists($col, $data)) {
@@ -161,6 +177,14 @@ class SequenceModel
         $this->db->execute('UPDATE sequences SET completion_count = completion_count + 1 WHERE id = ?', [$id]);
     }
 
+    public function resetStats(int $id): bool
+    {
+        return $this->db->execute(
+            'UPDATE sequences SET view_count = 0, completion_count = 0 WHERE id = ?',
+            [$id]
+        );
+    }
+
     public function duplicate(int $id): int|false
     {
         $seq = $this->findById($id);
@@ -180,16 +204,30 @@ class SequenceModel
 
         $this->db->execute(
             'INSERT INTO sequences
-             (title, slug, description, type, start_code, finale_code, finale_requires_code,
-              introduction_content, intro_file_path, intro_file_type, intro_original_filename,
+             (title, slug, description, type, start_code, intro_access_code, finale_code, finale_requires_code,
+              introduction_content, intro_instruction, intro_file_path, intro_file_type, intro_original_filename,
               intro_file_size, intro_mime_type, intro_caption,
-              finale_content, finale_file_path, finale_file_type, finale_original_filename,
-              finale_file_size, finale_mime_type, finale_caption, published, expires_at)
-             SELECT CONCAT(title, " (Copy)"), ?, description, type, start_code, finale_code,
-              finale_requires_code, introduction_content, intro_file_path, intro_file_type,
+              intro_hint_text, intro_hint_file_path, intro_hint_file_type, intro_hint_original_filename,
+              intro_hint_file_size, intro_hint_mime_type, intro_hint_caption,
+              finale_content, finale_instruction, finale_file_path, finale_file_type, finale_original_filename,
+              finale_file_size, finale_mime_type, finale_caption,
+              finale_hint_text, finale_hint_file_path, finale_hint_file_type, finale_hint_original_filename,
+              finale_hint_file_size, finale_hint_mime_type, finale_hint_caption,
+              solution_content, solution_file_path, solution_file_type, solution_original_filename,
+              solution_file_size, solution_mime_type, solution_caption,
+              thank_you_content, published, expires_at)
+             SELECT CONCAT(title, " (Copy)"), ?, description, type, start_code, intro_access_code, finale_code,
+              finale_requires_code, introduction_content, intro_instruction, intro_file_path, intro_file_type,
               intro_original_filename, intro_file_size, intro_mime_type, intro_caption,
-              finale_content, finale_file_path, finale_file_type, finale_original_filename,
-              finale_file_size, finale_mime_type, finale_caption, 0, expires_at
+              intro_hint_text, intro_hint_file_path, intro_hint_file_type, intro_hint_original_filename,
+              intro_hint_file_size, intro_hint_mime_type, intro_hint_caption,
+              finale_content, finale_instruction, finale_file_path, finale_file_type, finale_original_filename,
+              finale_file_size, finale_mime_type, finale_caption,
+              finale_hint_text, finale_hint_file_path, finale_hint_file_type, finale_hint_original_filename,
+              finale_hint_file_size, finale_hint_mime_type, finale_hint_caption,
+              solution_content, solution_file_path, solution_file_type, solution_original_filename,
+              solution_file_size, solution_mime_type, solution_caption,
+              thank_you_content, 0, expires_at
              FROM sequences WHERE id = ?',
             [$slug, $id]
         );
@@ -218,11 +256,11 @@ class SequenceModel
         // Duplicate clues (but NOT their files — shared reference)
         $this->db->execute(
             'INSERT INTO clues
-             (sequence_id, title, content, access_code, file_path, file_type,
+             (sequence_id, title, content, access_code, instruction, file_path, file_type,
               original_filename, file_size, mime_type, file_caption,
               hint_text, hint_file_path, hint_file_type, hint_original_filename,
               hint_file_size, hint_mime_type, hint_caption, sort_order)
-             SELECT ?, title, content, access_code, file_path, file_type,
+             SELECT ?, title, content, access_code, instruction, file_path, file_type,
               original_filename, file_size, mime_type, file_caption,
               hint_text, hint_file_path, hint_file_type, hint_original_filename,
               hint_file_size, hint_mime_type, hint_caption, sort_order

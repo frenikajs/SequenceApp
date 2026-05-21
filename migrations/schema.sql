@@ -32,7 +32,7 @@ CREATE TABLE sequences (
     title                   VARCHAR(255) NOT NULL,
     slug                    VARCHAR(255) NOT NULL,
     description             TEXT NULL,
-    type                    ENUM('sequential','open') NOT NULL DEFAULT 'sequential',
+    type                    ENUM('sequential','open','gameboard') NOT NULL DEFAULT 'sequential',
 
     start_code              VARCHAR(255) NOT NULL,
     finale_code             VARCHAR(255) NULL,
@@ -45,6 +45,14 @@ CREATE TABLE sequences (
     intro_file_size         INT UNSIGNED NULL,
     intro_mime_type         VARCHAR(100) NULL,
     intro_caption           VARCHAR(255) NULL,
+
+    intro_hint_text             MEDIUMTEXT   NULL,
+    intro_hint_file_path        VARCHAR(500) NULL,
+    intro_hint_file_type        VARCHAR(20)  NULL,
+    intro_hint_original_filename VARCHAR(255) NULL,
+    intro_hint_file_size        INT UNSIGNED NULL,
+    intro_hint_mime_type        VARCHAR(100) NULL,
+    intro_hint_caption          VARCHAR(255) NULL,
 
     finale_content          MEDIUMTEXT NULL,
     finale_file_path        VARCHAR(500) NULL,
@@ -90,6 +98,7 @@ CREATE TABLE clues (
     sequence_id             INT UNSIGNED NOT NULL,
     title                   VARCHAR(255) NOT NULL DEFAULT '',
     content                 MEDIUMTEXT NULL,
+    reward_content          LONGTEXT   NULL,
     access_code             VARCHAR(255) NOT NULL,
 
     file_path               VARCHAR(500) NULL,

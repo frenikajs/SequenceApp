@@ -29,7 +29,9 @@ ob_start();
             'index'                  => $i + 1,
             'title'                  => $clue['title'],
             'content'                => $clue['content'],
+            'reward_content'         => $clue['reward_content'] ?? '',
             'access_code'            => $clue['access_code'],
+            'instruction'            => $clue['instruction'] ?? '',
             'hint_text'              => $clue['hint_text'],
             'file_path'              => $clue['file_path'],
             'file_type'              => $clue['file_type'],
@@ -60,6 +62,13 @@ ob_start();
             <?php else: ?>
               <a href="<?= url('admin/clues/' . $clue['id'] . '/page') ?>"
                  class="btn btn-ghost btn-xs" title="Create decoy page">&#43; Page</a>
+            <?php endif; ?>
+            <?php if (isset($puzzles[(int)$clue['id']])): ?>
+              <a href="<?= url('admin/clues/' . $clue['id'] . '/puzzle') ?>"
+                 class="btn btn-ghost btn-xs" title="Edit puzzle page">&#129513; Puzzle</a>
+            <?php else: ?>
+              <a href="<?= url('admin/clues/' . $clue['id'] . '/puzzle') ?>"
+                 class="btn btn-ghost btn-xs" title="Create puzzle page">&#43; Puzzle</a>
             <?php endif; ?>
             <button class="btn btn-ghost btn-xs"
               data-clue='<?= $escaped ?>'
@@ -101,14 +110,24 @@ ob_start();
             <input type="text" name="title" id="clue-title" placeholder="Clue 1: The First Fragment">
           </div>
           <div class="form-group">
-            <label>Content</label>
+            <label>Content <span class="muted">(the clue the player sees when they click the locked tile)</span></label>
             <div class="quill-editor" id="clue-content-editor"></div>
             <input type="hidden" name="content" id="clue-content-hidden">
           </div>
           <div class="form-group">
+            <label>Reward <span class="muted">(rich-text reward shown after the tile is unlocked)</span></label>
+            <div class="quill-editor" id="clue-reward-editor"></div>
+            <input type="hidden" name="reward_content" id="clue-reward-hidden">
+          </div>
+          <div class="form-group">
             <label>Access Code <span class="req">*</span></label>
-            <input type="text" name="access_code" id="clue-code" required placeholder="FRAGMENT1">
-            <small>Case-insensitive. User enters this to unlock the next clue.</small>
+            <input type="text" name="access_code" id="clue-code" class="code-upper" required placeholder="FRAGMENT1">
+            <small>User enters this to unlock the next clue.</small>
+          </div>
+          <div class="form-group">
+            <label>Gate Instruction</label>
+            <input type="text" name="clue_instruction" id="clue-instruction"
+                   placeholder="Shown above this clue's code box. Leave blank for none.">
           </div>
 
           <!-- Clue file -->
@@ -356,12 +375,14 @@ const EDIT_URL    = <?= json_encode(url('admin/clues/')) ?>;
 const UPLOAD_BASE = <?= json_encode(UPLOAD_URL) ?>;
 
 document.addEventListener('DOMContentLoaded', function () {
-  window.clueQ = initQuill('#clue-content-editor', '');
-  window.hintQ = initQuill('#hint-content-editor', '');
+  window.clueQ   = initQuill('#clue-content-editor', '');
+  window.rewardQ = initQuill('#clue-reward-editor', '');
+  window.hintQ   = initQuill('#hint-content-editor', '');
 
   document.getElementById('clue-form').addEventListener('submit', function (e) {
     e.preventDefault();
     document.getElementById('clue-content-hidden').value = window.clueQ.root.innerHTML;
+    document.getElementById('clue-reward-hidden').value  = window.rewardQ.root.innerHTML;
     document.getElementById('hint-content-hidden').value  = window.hintQ.root.innerHTML;
 
     const action = document.getElementById('clue-action').value;
@@ -461,21 +482,25 @@ function openEditClue(btn) {
   document.getElementById('clue-action').value = 'edit';
   document.getElementById('clue-id-field').value = id;
   document.getElementById('clue-title').value = data.title || '';
-  document.getElementById('clue-code').value  = data.access_code || '';
+  document.getElementById('clue-code').value  = (data.access_code || '').toUpperCase();
+  document.getElementById('clue-instruction').value = data.instruction || '';
   document.getElementById('clue-submit-btn').textContent = 'Save Clue';
 
-  window.clueQ.root.innerHTML = data.content || '';
-  window.hintQ.root.innerHTML = data.hint_text || '';
+  window.clueQ.root.innerHTML   = data.content || '';
+  window.rewardQ.root.innerHTML = data.reward_content || '';
+  window.hintQ.root.innerHTML   = data.hint_text || '';
 
   if (data.file_path) {
     const wrap = document.getElementById('clue-current-media');
-    wrap.innerHTML = buildAdminMediaThumb(data.file_type, UPLOAD_BASE + '/' + data.file_path, data.original_filename);
+    wrap.innerHTML = buildAdminMediaThumb(data.file_type, UPLOAD_BASE + '/' + data.file_path, data.original_filename)
+      + ' <button type="button" class="btn btn-danger btn-xs" onclick="deleteClueMedia(\'clue\')">Remove</button>';
     wrap.classList.remove('hidden');
     document.getElementById('clue-upload-area').classList.add('hidden');
   }
   if (data.hint_file_path) {
     const wrap = document.getElementById('hint-current-media');
-    wrap.innerHTML = buildAdminMediaThumb(data.hint_file_type, UPLOAD_BASE + '/' + data.hint_file_path, data.hint_original_filename);
+    wrap.innerHTML = buildAdminMediaThumb(data.hint_file_type, UPLOAD_BASE + '/' + data.hint_file_path, data.hint_original_filename)
+      + ' <button type="button" class="btn btn-danger btn-xs" onclick="deleteClueMedia(\'hint\')">Remove</button>';
     wrap.classList.remove('hidden');
     document.getElementById('hint-upload-area').classList.add('hidden');
   }
@@ -490,15 +515,40 @@ function buildAdminMediaThumb(type, url, name) {
   return `<a href="${url}">📎 ${name}</a>`;
 }
 
+function deleteClueMedia(slot) {
+  const clueId = document.getElementById('clue-id-field').value;
+  if (!clueId) { return; }
+  if (!confirm('Remove this file?')) { return; }
+  const csrf = document.querySelector('input[name="csrf_token"]')?.value || '';
+  fetch('/admin/media/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ csrf_token: csrf, target: 'clue', target_id: clueId, media_slot: slot }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) { alert(data.error || 'Delete failed.'); return; }
+      const cur  = document.getElementById(slot === 'hint' ? 'hint-current-media' : 'clue-current-media');
+      const area = document.getElementById(slot === 'hint' ? 'hint-upload-area'  : 'clue-upload-area');
+      const inp  = document.getElementById(slot === 'hint' ? 'hint-file'         : 'clue-file');
+      if (cur)  { cur.innerHTML = ''; cur.classList.add('hidden'); }
+      if (inp)  { inp.value = ''; }
+      if (area) { area.classList.remove('hidden'); }
+    })
+    .catch(() => alert('Delete failed.'));
+}
+
 function resetClueForm() {
   document.getElementById('clue-form-title').textContent = 'Add New Clue';
   document.getElementById('clue-action').value = 'add';
   document.getElementById('clue-id-field').value = '';
   document.getElementById('clue-title').value = '';
   document.getElementById('clue-code').value  = '';
+  document.getElementById('clue-instruction').value = '';
   document.getElementById('clue-submit-btn').textContent = 'Add Clue';
-  window.clueQ.root.innerHTML = '';
-  window.hintQ.root.innerHTML = '';
+  window.clueQ.root.innerHTML   = '';
+  window.rewardQ.root.innerHTML = '';
+  window.hintQ.root.innerHTML   = '';
   document.getElementById('clue-current-media').classList.add('hidden');
   document.getElementById('hint-current-media').classList.add('hidden');
   document.getElementById('clue-upload-area').classList.remove('hidden');

@@ -58,7 +58,7 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
               'sms'         => ['&#128172;', 'Text Messages',   'iOS iMessage conversation'],
               'invoice'     => ['&#129534;', 'Invoice',         'Professional invoice sheet'],
               'receipt'     => ['&#129534;', 'Receipt',         'Store receipt'],
-              'map'         => ['&#128506;', 'Street Map',      'Map with up to 5 pinned locations'],
+              'map'         => ['&#128506;', 'Map',             'Street or festival map with up to 6 pins'],
             ];
             foreach ($types as $val => [$icon, $label, $desc]):
               $checked = $siteType === $val ? 'checked' : '';
@@ -204,21 +204,36 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
           </div>
 
           <?php
-          $mapMarkers = ['', '', '', '', ''];
+          $mapMarkers = ['', '', '', '', '', ''];
+          $mapKind    = 'street';
           if ($siteType === 'map') {
               if (isset($_POST['map_marker1'])) {
-                  for ($__i = 0; $__i < 5; $__i++) $mapMarkers[$__i] = $_POST['map_marker' . ($__i + 1)] ?? '';
+                  for ($__i = 0; $__i < 6; $__i++) $mapMarkers[$__i] = $_POST['map_marker' . ($__i + 1)] ?? '';
+                  $mapKind = $_POST['map_kind'] ?? 'street';
               } elseif ($page) {
                   $__raw = json_decode($page['nav_json'] ?? '[]', true) ?: [];
-                  foreach ($__raw as $__i => $__row) {
-                      if ($__i < 5) $mapMarkers[$__i] = $__row['label'] ?? '';
+                  if (isset($__raw['markers']) && is_array($__raw['markers'])) {
+                      $mapKind = $__raw['type'] ?? 'street';
+                      foreach ($__raw['markers'] as $__i => $__row) {
+                          if ($__i < 6) $mapMarkers[$__i] = $__row['label'] ?? '';
+                      }
+                  } elseif (is_array($__raw)) {
+                      foreach ($__raw as $__i => $__row) {
+                          if ($__i < 6) $mapMarkers[$__i] = $__row['label'] ?? '';
+                      }
                   }
               }
           }
+          if (!in_array($mapKind, ['street', 'festival'], true)) { $mapKind = 'street'; }
           ?>
           <div class="form-group" id="grp-map" <?= $siteType !== 'map' ? 'style="display:none"' : '' ?>>
+            <label>Map Type</label>
+            <select name="map_kind" class="inv-field" style="margin-bottom:.75rem">
+              <option value="street" <?= $mapKind === 'street' ? 'selected' : '' ?>>Street Map</option>
+              <option value="festival" <?= $mapKind === 'festival' ? 'selected' : '' ?>>Festival</option>
+            </select>
             <label>Map Markers</label>
-            <?php for ($__i = 0; $__i < 5; $__i++): ?>
+            <?php for ($__i = 0; $__i < 6; $__i++): ?>
             <div class="map-marker-row">
               <span class="map-marker-num"><?= $__i + 1 ?></span>
               <input type="text" name="map_marker<?= $__i + 1 ?>" class="inv-field"
@@ -226,7 +241,7 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
                      value="<?= e($mapMarkers[$__i]) ?>">
             </div>
             <?php endfor; ?>
-            <small class="inv-hint">Pins are auto-placed on a fake street map. Empty markers are hidden.</small>
+            <small class="inv-hint">Pins are auto-placed on the chosen fake map. Empty markers are hidden.</small>
           </div>
 
           <?php
@@ -252,6 +267,59 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
             <textarea name="blog_cmt_text" rows="3" class="sms-textarea"
                       placeholder="Comment text… (leave blank to use a default fake comment)"><?= e($blogCmtText) ?></textarea>
             <small class="inv-hint">Shown as the last comment on the blog post. The other comments are fake and fixed.</small>
+          </div>
+
+          <?php
+          $corpCmtName = '';
+          $corpCmtText = '';
+          if ($siteType === 'corporate') {
+              if (isset($_POST['corp_cmt_name']) || isset($_POST['corp_cmt_text'])) {
+                  $corpCmtName = $_POST['corp_cmt_name'] ?? '';
+                  $corpCmtText = $_POST['corp_cmt_text'] ?? '';
+              } elseif ($page) {
+                  $__cc = json_decode($page['nav_json'] ?? '[]', true);
+                  if (is_array($__cc)) {
+                      $corpCmtName = $__cc['cmt_name'] ?? '';
+                      $corpCmtText = $__cc['cmt_text'] ?? '';
+                  }
+              }
+          }
+          ?>
+          <div class="form-group" id="grp-corpcomment" <?= $siteType !== 'corporate' ? 'style="display:none"' : '' ?>>
+            <label>First Comment (Pinned Announcement)</label>
+            <input type="text" name="corp_cmt_name" class="inv-field"
+                   placeholder="Commenter name (e.g. Priya Nair)" value="<?= e($corpCmtName) ?>">
+            <textarea name="corp_cmt_text" rows="3" class="sms-textarea"
+                      placeholder="Comment text… (leave blank to use a default fake comment)"><?= e($corpCmtText) ?></textarea>
+            <small class="inv-hint">Shown as the first comment under the pinned announcement. Other posts and comments are fake and fixed.</small>
+          </div>
+
+          <?php
+          $arcLog = ['op'=>'','action'=>''];
+          if ($siteType === 'archive') {
+              if (isset($_POST['arc_log_op']) || isset($_POST['arc_log_action'])) {
+                  $arcLog = [
+                      'op'     => $_POST['arc_log_op']     ?? '',
+                      'action' => $_POST['arc_log_action'] ?? '',
+                  ];
+              } elseif ($page) {
+                  $__al = json_decode($page['nav_json'] ?? '[]', true);
+                  if (is_array($__al)) {
+                      $arcLog = [
+                          'op'     => $__al['log_op']     ?? '',
+                          'action' => $__al['log_action'] ?? '',
+                      ];
+                  }
+              }
+          }
+          ?>
+          <div class="form-group" id="grp-archivelog" <?= $siteType !== 'archive' ? 'style="display:none"' : '' ?>>
+            <label>Last Access-Log Entry</label>
+            <input type="text" name="arc_log_op" class="inv-field"
+                   placeholder="Terminal / Operator (e.g. TERM-02 / ADMIN-001)" value="<?= e($arcLog['op']) ?>">
+            <input type="text" name="arc_log_action" class="inv-field"
+                   placeholder="Action (e.g. VERIFY)" value="<?= e($arcLog['action']) ?>">
+            <small class="inv-hint">Overrides the operator and action of the final access-log row. Leave a field blank to keep its default. Everything else in the log is fake and fixed.</small>
           </div>
 
           <?php
@@ -430,8 +498,10 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
 .map-marker-row{display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center}
 .map-marker-num{width:24px;height:24px;flex:none;border-radius:50%;background:#ea4335;color:#fff;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .map-marker-row .inv-field{margin-bottom:0;flex:1}
-#grp-blogcomment .inv-field{width:100%;padding:.55rem .75rem;margin-bottom:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:inherit;font-family:inherit;font-size:.88rem}
-#grp-blogcomment .inv-field:focus{outline:none;border-color:rgba(255,255,255,.3)}
+#grp-map>select.inv-field{display:block;width:100%;padding:.55rem .75rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:inherit;font-family:inherit;font-size:.88rem}
+#grp-map>select.inv-field:focus{outline:none;border-color:rgba(255,255,255,.3)}
+#grp-blogcomment .inv-field,#grp-corpcomment .inv-field,#grp-archivelog .inv-field{width:100%;padding:.55rem .75rem;margin-bottom:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:inherit;font-family:inherit;font-size:.88rem}
+#grp-blogcomment .inv-field:focus,#grp-corpcomment .inv-field:focus,#grp-archivelog .inv-field:focus{outline:none;border-color:rgba(255,255,255,.3)}
 .cal-ev{margin-bottom:.85rem;padding:.75rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.02)}
 .cal-ev small{display:block;font-size:.71rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent,#6c63ff);margin-bottom:.4rem}
 .cal-ev .inv-field{width:100%;padding:.5rem .7rem;margin-bottom:.4rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:inherit;font-family:inherit;font-size:.85rem}
@@ -545,6 +615,34 @@ const FIELD_CONFIG = {
     footerPh:     'About text shown in the footer',
     showNav:      false,
   },
+  archive: {
+    cardTitle:    'Document Content',
+    title:        'Document Title',
+    titlePh:      'e.g. Memorandum on Project Halcyon',
+    author:       'Author',
+    authorPh:     'e.g. R. Castellan',
+    date:         'Date Filed',
+    body:         'Document Body',
+    sitename:     'Archive Name',
+    sitenamePh:   'Shown in the archive system header.',
+    footer:       'Footer Text',
+    footerPh:     'e.g. National Records Office',
+    showNav:      false,
+  },
+  corporate: {
+    cardTitle:    'Post Content',
+    title:        'Post Headline',
+    titlePh:      'e.g. Q3 Results & What Comes Next',
+    author:       'Author',
+    authorPh:     'e.g. Jordan Avery',
+    date:         'Posted Date',
+    body:         'Post Body',
+    sitename:     'Company Name',
+    sitenamePh:   'Shown as the brand in the feed top bar.',
+    footer:       'Author Role / Footer',
+    footerPh:     'e.g. Head of Communications',
+    showNav:      false,
+  },
   _default: {
     cardTitle:    'Page Content',
     title:        'Page Title',
@@ -582,6 +680,8 @@ function applyTypeConfig(type) {
   document.getElementById('grp-receipt').style.display         = (type === 'receipt') ? '' : 'none';
   document.getElementById('grp-map').style.display             = (type === 'map') ? '' : 'none';
   document.getElementById('grp-blogcomment').style.display     = (type === 'blog') ? '' : 'none';
+  document.getElementById('grp-corpcomment').style.display      = (type === 'corporate') ? '' : 'none';
+  document.getElementById('grp-archivelog').style.display       = (type === 'archive') ? '' : 'none';
   document.getElementById('grp-calendar').style.display        = (type === 'calendar') ? '' : 'none';
 }
 

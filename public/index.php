@@ -12,13 +12,18 @@ require_once APP_ROOT . '/models/AdminModel.php';
 require_once APP_ROOT . '/models/SequenceModel.php';
 require_once APP_ROOT . '/models/ClueModel.php';
 require_once APP_ROOT . '/models/CluePageModel.php';
+require_once APP_ROOT . '/models/PuzzlePageModel.php';
 require_once APP_ROOT . '/models/ProgressModel.php';
+require_once APP_ROOT . '/models/SettingsModel.php';
 require_once APP_ROOT . '/controllers/AuthController.php';
 require_once APP_ROOT . '/controllers/AdminController.php';
 require_once APP_ROOT . '/controllers/CluePageController.php';
+require_once APP_ROOT . '/controllers/PuzzlePageController.php';
 require_once APP_ROOT . '/controllers/SequenceController.php';
+require_once APP_ROOT . '/controllers/GuideController.php';
 require_once APP_ROOT . '/controllers/MediaController.php';
 
+Security::sendSecurityHeaders();
 Security::startSecureSession();
 
 // ── Request parsing ───────────────────────────────────────────────────────────
@@ -51,6 +56,18 @@ if ($seg0 === 'uploads') {
 // ── Public decoy pages ────────────────────────────────────────────────────────
 if ($seg0 === 'p' && $seg1 !== '') {
     (new CluePageController())->show($seg1);
+    exit;
+}
+
+// ── Public puzzle pages ───────────────────────────────────────────────────────
+if ($seg0 === 'z' && $seg1 !== '') {
+    (new PuzzlePageController())->show($seg1);
+    exit;
+}
+
+// ── Public "How to Play" guide ────────────────────────────────────────────────
+if ($seg0 === 'how-to-play' && $seg1 === '') {
+    (new GuideController())->show();
     exit;
 }
 
@@ -121,6 +138,21 @@ if ($seg0 === 'admin') {
         exit;
     }
 
+    // Puzzle page editor: /admin/clues/{id}/puzzle[/delete]
+    if ($adminSeg1 === 'clues' && ctype_digit($adminSeg2) && $adminSeg3 === 'puzzle') {
+        $clueId      = (int)$adminSeg2;
+        $puzzleCtrl  = new PuzzlePageController();
+        $seg4        = $segments[4] ?? '';
+        if ($method === 'POST' && $seg4 === 'delete') {
+            $puzzleCtrl->deletePage($clueId);
+        } elseif ($method === 'POST') {
+            $puzzleCtrl->savePage($clueId);
+        } else {
+            $puzzleCtrl->editPage($clueId);
+        }
+        exit;
+    }
+
     // Clue edit / delete: /admin/clues/{id}/edit|delete
     if ($adminSeg1 === 'clues' && ctype_digit($adminSeg2)) {
         $clueId = (int)$adminSeg2;
@@ -129,6 +161,13 @@ if ($seg0 === 'admin') {
             'delete' => $adminCtrl->deleteClue($clueId),
             default  => notFound(),
         };
+        exit;
+    }
+
+    // How to Play guide editor: /admin/guide
+    if ($adminSeg1 === 'guide' && $adminSeg2 === '') {
+        $guideCtrl = new GuideController();
+        ($method === 'POST') ? $guideCtrl->save() : $guideCtrl->edit();
         exit;
     }
 
@@ -153,6 +192,7 @@ if ($seg0 === 'admin') {
                 ['POST', 'delete']    => $adminCtrl->deleteSequence($seqId),
                 ['POST', 'publish']   => $adminCtrl->togglePublish($seqId),
                 ['POST', 'duplicate'] => $adminCtrl->duplicateSequence($seqId),
+                ['POST', 'reset-stats'] => $adminCtrl->resetStats($seqId),
                 ['GET',  'clues']     => $adminCtrl->manageClues($seqId),
                 ['POST', 'clues']     => $adminCtrl->addClue($seqId),
                 default               => notFound(),
