@@ -314,6 +314,24 @@ small { display: block; font-size: .78rem; color: #6b7280; margin-top: .25rem; }
 .muted  { color: #6b7280; }
 .small  { font-size: .82rem; }
 .hidden { display: none !important; }
+.code-upper { text-transform: uppercase; }
+.code-upper::placeholder { text-transform: none; }
+
+/* ── Collapsible sequence sections ─────────────────────────────────────────── */
+.seq-section { padding: 0; }
+.seq-section > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.seq-section > summary::-webkit-details-marker { display: none; }
+.seq-section > summary .seq-chevron {
+  color: #6b7280; font-size: .9rem; transition: transform .2s;
+}
+.seq-section[open] > summary .seq-chevron { transform: rotate(180deg); }
+.seq-subhead {
+  font-size: .95rem; font-weight: 600; color: #c7cdd6;
+  margin: 0 0 .35rem;
+}
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {

@@ -156,8 +156,13 @@ class FileUpload
     private function writeHtaccess(string $dir): void
     {
         $htaccess = $dir . '/.htaccess';
-        if (!file_exists($htaccess)) {
-            file_put_contents($htaccess, "Options -Indexes\nphp_flag engine off\n");
+        // Host-agnostic: block execution of script files without using
+        // php_flag/Options (mod_php-only / often disallowed → 500 on FastCGI hosts).
+        $content = "<FilesMatch \"(?i)\\.(php|phtml|php[0-9]|phps|phar|cgi|pl|py|sh|asp|aspx|jsp)\$\">\n"
+                 . "  Require all denied\n"
+                 . "</FilesMatch>\n";
+        if (!file_exists($htaccess) || trim((string)@file_get_contents($htaccess)) !== trim($content)) {
+            @file_put_contents($htaccess, $content);
         }
     }
 }

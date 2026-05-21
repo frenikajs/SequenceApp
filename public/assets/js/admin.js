@@ -1,5 +1,16 @@
 'use strict';
 
+// ── Force access-code inputs to uppercase ─────────────────────────────────────
+
+document.addEventListener('input', function (e) {
+  var el = e.target;
+  if (el && el.classList && el.classList.contains('code-upper')) {
+    var s = el.selectionStart, en = el.selectionEnd;
+    el.value = el.value.toUpperCase();
+    try { el.setSelectionRange(s, en); } catch (_) {}
+  }
+});
+
 // ── Modal (delete confirmation) ───────────────────────────────────────────────
 
 let _pendingDeleteUrl = '';

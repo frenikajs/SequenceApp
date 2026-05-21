@@ -28,7 +28,7 @@ ob_start();
           </div>
           <div class="form-group">
             <label>Description</label>
-            <textarea name="description" rows="3" placeholder="Brief description for admin referenceâ€¦"><?= e($input['description'] ?? '') ?></textarea>
+            <textarea name="description" rows="3" placeholder="Brief description for admin reference…"><?= e($input['description'] ?? '') ?></textarea>
           </div>
           <div class="form-row">
             <div class="form-group flex-1">
@@ -36,34 +36,31 @@ ob_start();
               <select name="type" id="seq-type">
                 <option value="sequential" <?= ($input['type'] ?? 'sequential') === 'sequential' ? 'selected' : '' ?>>Sequential (one clue at a time)</option>
                 <option value="open" <?= ($input['type'] ?? '') === 'open' ? 'selected' : '' ?>>Open (all clues visible)</option>
+                <option value="gameboard" <?= ($input['type'] ?? '') === 'gameboard' ? 'selected' : '' ?>>Game Board (Candy Land tile path)</option>
               </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group flex-1">
               <label>Start Code <span class="req">*</span></label>
-              <input type="text" name="start_code" required
+              <input type="text" name="start_code" class="code-upper" required
                      value="<?= e($input['start_code'] ?? '') ?>" placeholder="BEGIN2024">
-              <small>Case-insensitive. Users enter this to start.</small>
+              <small>Players enter this to access the mystery.</small>
             </div>
             <div class="form-group flex-1">
-              <label>Finale Code</label>
-              <input type="text" name="finale_code"
-                     value="<?= e($input['finale_code'] ?? '') ?>" placeholder="ENDGAME">
-              <small>Leave blank to auto-reveal finale.</small>
+              <label>Solution Code</label>
+              <input type="text" name="finale_code" class="code-upper"
+                     value="<?= e($input['finale_code'] ?? '') ?>" placeholder="SOLVE">
+              <small>Entered on &ldquo;Ready to Solve?&rdquo; to reveal the Solution.</small>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" name="finale_requires_code" value="1"
-                <?= !isset($input['finale_requires_code']) || $input['finale_requires_code'] ? 'checked' : '' ?>>
-              Finale requires a code
-            </label>
           </div>
           <div class="form-row">
-            <div class="form-group flex-1">
-              <label>Expires At</label>
-              <input type="datetime-local" name="expires_at" value="<?= e($input['expires_at'] ?? '') ?>">
+            <div class="form-group flex-1 align-end">
+              <label class="checkbox-label">
+                <input type="checkbox" name="finale_requires_code" value="1"
+                  <?= !isset($input['finale_requires_code']) || $input['finale_requires_code'] ? 'checked' : '' ?>>
+                Require Solution Code
+              </label>
             </div>
             <div class="form-group flex-1 align-end">
               <label class="checkbox-label">
@@ -72,13 +69,28 @@ ob_start();
               </label>
             </div>
           </div>
+          <div class="form-group">
+            <label>Expires At</label>
+            <input type="datetime-local" name="expires_at" value="<?= e($input['expires_at'] ?? '') ?>">
+          </div>
         </div>
       </div>
 
-      <!-- Introduction -->
-      <div class="card mt-4">
-        <div class="card-header"><h2>Introduction</h2><small>Shown after start code is entered</small></div>
+      <!-- Introduction (collapsible) -->
+      <details class="card mt-4 seq-section">
+        <summary class="card-header"><h2>Introduction</h2><span class="seq-chevron">▾</span></summary>
         <div class="card-body">
+          <div class="form-group">
+            <label>Introduction Access Code</label>
+            <input type="text" name="intro_access_code" class="code-upper"
+                   value="<?= e($input['intro_access_code'] ?? '') ?>" placeholder="ENTER1">
+            <small>Entered on the Introduction to unlock Clue 1.</small>
+          </div>
+          <div class="form-group">
+            <label>Gate Instruction</label>
+            <textarea name="intro_instruction" rows="2" class="form-input"
+                      placeholder="Shown above the code box on the Introduction. Leave blank for none."><?= e($input['intro_instruction'] ?? '') ?></textarea>
+          </div>
           <div class="form-group">
             <label>Content</label>
             <div class="quill-editor" id="intro-editor"></div>
@@ -88,8 +100,8 @@ ob_start();
             <label>Attached Media</label>
             <div class="upload-area" id="intro-upload-area">
               <div class="upload-placeholder">
-                <span>ðŸ" Drag & drop or click to upload</span>
-                <span class="small muted">PNG, JPG, PDF, MP3, WAV, OGG â€" max 10MB</span>
+                <span>📁 Drag & drop or click to upload</span>
+                <span class="small muted">PNG, JPG, PDF, MP3, WAV, OGG — max 10MB</span>
               </div>
               <input type="file" name="intro_file" id="intro-file" class="upload-input"
                      accept=".png,.jpg,.jpeg,.pdf,.mp3,.wav,.ogg,.m4a,.mov">
@@ -97,31 +109,32 @@ ob_start();
             <div id="intro-preview" class="media-preview hidden"></div>
           </div>
         </div>
-      </div>
+      </details>
 
-      <!-- Finale -->
-      <div class="card mt-4">
-        <div class="card-header"><h2>Finale</h2><small>Shown when sequence is completed</small></div>
+      <!-- Solution (collapsible) -->
+      <details class="card mt-4 seq-section">
+        <summary class="card-header"><h2>Solution</h2><span class="seq-chevron">▾</span></summary>
         <div class="card-body">
           <div class="form-group">
             <label>Content</label>
-            <div class="quill-editor" id="finale-editor"></div>
-            <input type="hidden" name="finale_content" id="finale-content">
+            <div class="quill-editor" id="solution-editor"></div>
+            <input type="hidden" name="solution_content" id="solution-content">
           </div>
           <div class="form-group">
             <label>Attached Media</label>
-            <div class="upload-area" id="finale-upload-area">
+            <div class="upload-area" id="solution-upload-area">
               <div class="upload-placeholder">
-                <span>ðŸ" Drag & drop or click to upload</span>
-                <span class="small muted">PNG, JPG, PDF, MP3, WAV, OGG â€" max 10MB</span>
+                <span>📁 Drag & drop or click to upload</span>
+                <span class="small muted">PNG, JPG, PDF, MP3, WAV, OGG — max 10MB</span>
               </div>
-              <input type="file" name="finale_file" id="finale-file" class="upload-input"
+              <input type="file" name="solution_file" id="solution-file" class="upload-input"
                      accept=".png,.jpg,.jpeg,.pdf,.mp3,.wav,.ogg,.m4a,.mov">
             </div>
-            <div id="finale-preview" class="media-preview hidden"></div>
+            <div id="solution-preview" class="media-preview hidden"></div>
           </div>
+          <p class="small muted">Introduction/Finale hints and the Thank You message can be added after creation from the edit page.</p>
         </div>
-      </div>
+      </details>
     </div>
 
     <!-- Right column: theme -->
@@ -196,7 +209,7 @@ ob_start();
 
   <div class="form-actions">
     <a href="<?= url('admin/sequences') ?>" class="btn btn-ghost">Cancel</a>
-    <button type="submit" class="btn btn-primary">Create Sequence & Add Clues â†’</button>
+    <button type="submit" class="btn btn-primary">Create Sequence & Add Clues →</button>
   </div>
 </form>
 
@@ -205,21 +218,21 @@ ob_start();
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Title â†’ slug preview
+  // Title → slug preview
   const titleEl = document.getElementById('seq-title');
 
   // Quill editors
-  const introQ  = initQuill('#intro-editor', '<?= e(addslashes($input['introduction_content'] ?? '')) ?>');
-  const finaleQ = initQuill('#finale-editor', '<?= e(addslashes($input['finale_content'] ?? '')) ?>');
+  const introQ    = initQuill('#intro-editor', '<?= e(addslashes($input['introduction_content'] ?? '')) ?>');
+  const solutionQ = initQuill('#solution-editor', '<?= e(addslashes($input['solution_content'] ?? '')) ?>');
 
   document.getElementById('sequence-form').addEventListener('submit', function() {
-    document.getElementById('intro-content').value  = introQ.root.innerHTML;
-    document.getElementById('finale-content').value = finaleQ.root.innerHTML;
+    document.getElementById('intro-content').value    = introQ.root.innerHTML;
+    document.getElementById('solution-content').value = solutionQ.root.innerHTML;
   });
 
   // File upload previews
   setupLocalPreview('intro-file', 'intro-preview', 'intro-upload-area');
-  setupLocalPreview('finale-file', 'finale-preview', 'finale-upload-area');
+  setupLocalPreview('solution-file', 'solution-preview', 'solution-upload-area');
 });
 </script>
 

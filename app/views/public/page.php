@@ -327,6 +327,25 @@ a{color:#00cc66;text-decoration:none}
 .doc-body strong{color:#c0c0b0;font-weight:700}
 .doc-body em{font-style:italic;color:#888}
 .ft{border-top:1px solid #1a1a1a;margin-top:3rem;padding:1.25rem 2rem;font-size:.7rem;color:#333;text-align:center}
+.doc-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem 1.75rem;border-top:1px dashed #2a2a2a;margin-top:.9rem;padding-top:.8rem}
+.doc-meta .doc-f value{color:#9a9a86}
+.doc-sec{border:1px solid #2a2a2a;background:#0a0a0a;margin-top:1.75rem}
+.doc-sec-h{background:#0d0d0d;border-bottom:1px solid #2a2a2a;padding:.5rem 1rem;color:#00cc66;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between}
+.doc-sec-h span{color:#444}
+.doc-sec-b{padding:.5rem 1rem .85rem;font-size:.78rem}
+.doc-rel-row{display:flex;gap:1rem;padding:.45rem 0;border-bottom:1px dashed #1c1c1c;color:#8a8a7a}
+.doc-rel-row:last-child{border-bottom:none}
+.doc-rel-row .rid{color:#00cc66;white-space:nowrap}
+.doc-rel-row .rt{flex:1}
+.doc-rel-row .rx{color:#444;white-space:nowrap}
+.doc-log{width:100%;border-collapse:collapse;font-size:.74rem;color:#7a7a6a}
+.doc-log td,.doc-log th{padding:.34rem .55rem;text-align:left;border-bottom:1px dashed #1c1c1c}
+.doc-log tr:last-child td{border-bottom:none}
+.doc-log th{color:#444;text-transform:uppercase;font-size:.64rem;letter-spacing:.1em}
+.doc-log td.ok{color:#00cc66}
+.doc-log td.dn{color:#a55}
+.ft-grid{display:flex;justify-content:center;gap:1.75rem;flex-wrap:wrap;color:#333}
+.ft-grid b{color:#555}
 </style>
 
 <?php elseif ($type === 'calendar'): ?>
@@ -689,30 +708,184 @@ $vpNo   = 4000 + ((int)($page['id'] ?? 1) % 6000);
 
 <?php elseif ($type === 'corporate'): ?>
 
-  <header class="hd">
-    <div class="hd-name"><?= $siteName ?></div>
-    <?php if ($navItems): ?>
-    <nav class="hd-nav">
-      <?php foreach ($navItems as $item): ?>
-      <a href="<?= htmlspecialchars($item['href'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></a>
-      <?php endforeach; ?>
-    </nav>
-    <?php endif; ?>
-  </header>
-
-  <div class="hero">
-    <div class="hero-label">Company Notice</div>
-    <h1 class="hero-title"><?= $pageTitle ?></h1>
-    <div class="hero-meta"><?= $author ?> &mdash; <?= htmlspecialchars($pubDate, ENT_QUOTES, 'UTF-8') ?></div>
-  </div>
-
-  <div class="wrap">
-    <div class="card">
-      <div class="card-body"><?= $page['content'] ?></div>
+<?php
+$wvBrandIn = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', (string)($page['site_name'] ?? 'W')), 0, 1)) ?: 'W';
+$wvAuthRaw = $page['author'] ?: 'Communications';
+$wvAuthIn  = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $wvAuthRaw), 0, 2)) ?: 'CO';
+$wvAvCol   = ['#0e7c6b','#3a6ea5','#b5532e','#7a59a8','#1f8a70','#c0392b','#2c7fb8'];
+$wvPick    = function (string $s) use ($wvAvCol) { return $wvAvCol[abs(crc32($s)) % count($wvAvCol)]; };
+$wvCmt     = json_decode($page['nav_json'] ?? '[]', true);
+$wvCmtName = (is_array($wvCmt) && trim((string)($wvCmt['cmt_name'] ?? '')) !== '')
+    ? $wvCmt['cmt_name'] : 'Priya Nair';
+$wvCmtText = (is_array($wvCmt) && trim((string)($wvCmt['cmt_text'] ?? '')) !== '')
+    ? $wvCmt['cmt_text'] : "Thanks for the clear update \u{2014} really appreciate the transparency on this.";
+$wvCmtIn   = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', (string)$wvCmtName), 0, 2)) ?: 'PN';
+?>
+  <div class="wv-top">
+    <div class="wv-top-in">
+      <div class="wv-logo"><span class="wv-logo-mark"><?= htmlspecialchars($wvBrandIn, ENT_QUOTES, 'UTF-8') ?></span> <?= $siteName ?></div>
+      <div class="wv-search"><input type="text" placeholder="Search people, posts and spaces"></div>
+      <nav class="wv-tnav">
+        <a href="#" class="act"><span class="ic">&#127968;</span><span>Home</span></a>
+        <a href="#"><span class="ic">&#128101;</span><span>Spaces</span></a>
+        <a href="#"><span class="ic">&#128197;</span><span>Events</span></a>
+        <a href="#"><span class="ic">&#128218;</span><span>Docs</span></a>
+        <a href="#"><span class="ic">&#128276;</span><span>Alerts</span></a>
+      </nav>
+      <div class="wv-me"><?= htmlspecialchars($wvAuthIn, ENT_QUOTES, 'UTF-8') ?></div>
     </div>
   </div>
 
-  <footer class="ft"><?= $footer ?></footer>
+  <div class="wv-wrap">
+    <!-- Left -->
+    <aside class="wv-side">
+      <div class="wv-card wv-pcard">
+        <div class="wv-pcover"></div>
+        <div class="wv-pav"><?= htmlspecialchars($wvAuthIn, ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="wv-pbody">
+          <div class="wv-pname"><?= $author ?></div>
+          <div class="wv-prole"><?= htmlspecialchars($footer !== '' ? strip_tags((string)$footer) : 'Team Member', ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="wv-pstats">
+            <div><b>128</b>Posts</div><div><b>1.2k</b>Kudos</div><div><b>34</b>Spaces</div>
+          </div>
+        </div>
+      </div>
+      <div class="wv-card wv-menu">
+        <a href="#" class="act"><span class="ic">&#127968;</span> Home Feed</a>
+        <a href="#"><span class="ic">&#11088;</span> My Spaces</a>
+        <a href="#"><span class="ic">&#128101;</span> People</a>
+        <a href="#"><span class="ic">&#128193;</span> Documents</a>
+        <a href="#"><span class="ic">&#128197;</span> Events</a>
+        <a href="#"><span class="ic">&#127942;</span> Awards</a>
+        <a href="#"><span class="ic">&#128172;</span> Shoutouts</a>
+      </div>
+    </aside>
+
+    <!-- Center feed -->
+    <main class="wv-feed">
+      <div class="wv-card wv-comp">
+        <div class="av"><?= htmlspecialchars($wvAuthIn, ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="fld">Share something with the team&hellip;</div>
+        <div class="go">Post</div>
+      </div>
+
+      <!-- REAL post (admin content) -->
+      <article class="wv-card wv-post pinned">
+        <span class="wv-pin">&#128204; Pinned Announcement</span>
+        <div class="wv-ph">
+          <div class="av" style="background:#0e7c6b"><?= htmlspecialchars($wvAuthIn, ENT_QUOTES, 'UTF-8') ?></div>
+          <div>
+            <div class="nm"><?= $author ?></div>
+            <div class="mt"><?= htmlspecialchars($pubDate, ENT_QUOTES, 'UTF-8') ?> &middot; &#127758; Company-wide</div>
+          </div>
+          <div class="more">&#8943;</div>
+        </div>
+        <?php if (trim((string)$pageTitle) !== ''): ?><div class="wv-ptitle"><?= $pageTitle ?></div><?php endif; ?>
+        <div class="wv-rich"><?= $page['content'] ?></div>
+        <div class="wv-stat">
+          <div class="wv-rx"><span style="background:#f4a01c">&#128077;</span><span style="background:#e0566b">&#10084;</span><span style="background:#3a6ea5">&#127881;</span> &nbsp;214</div>
+          <div>37 comments &middot; 12 shares</div>
+        </div>
+        <div class="wv-act">
+          <button>&#128077; React</button><button>&#128172; Comment</button><button>&#10150; Share</button>
+        </div>
+        <div class="wv-cmt">
+          <div class="av" style="background:<?= $wvPick($wvCmtName) ?>"><?= htmlspecialchars($wvCmtIn, ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="bub"><b><?= htmlspecialchars($wvCmtName, ENT_QUOTES, 'UTF-8') ?></b><?= htmlspecialchars($wvCmtText, ENT_QUOTES, 'UTF-8') ?></div>
+        </div>
+      </article>
+
+      <!-- Fake posts -->
+      <article class="wv-card wv-post">
+        <div class="wv-ph">
+          <div class="av" style="background:<?= $wvPick('People & Culture') ?>">PC</div>
+          <div><div class="nm">People &amp; Culture</div><div class="mt">2 days ago &middot; &#128101; All Staff</div></div>
+          <div class="more">&#8943;</div>
+        </div>
+        <div class="wv-ptext">Please join us in welcoming our newest team members starting this week! Say hello when you see them around &#128075;</div>
+        <div class="wv-stat">
+          <div class="wv-rx"><span style="background:#f4a01c">&#128075;</span><span style="background:#e0566b">&#10084;</span> &nbsp;96</div>
+          <div>18 comments</div>
+        </div>
+        <div class="wv-act"><button>&#128077; React</button><button>&#128172; Comment</button><button>&#10150; Share</button></div>
+      </article>
+
+      <article class="wv-card wv-post">
+        <div class="wv-ph">
+          <div class="av" style="background:<?= $wvPick('Marcus Bell') ?>">MB</div>
+          <div><div class="nm">Marcus Bell</div><div class="mt">3 days ago &middot; &#127942; Shoutouts</div></div>
+          <div class="more">&#8943;</div>
+        </div>
+        <div class="wv-ptext">Huge shoutout to <strong>Dana Whitfield</strong> for stepping up on the migration over the weekend. Above and beyond &mdash; thank you! &#127881;</div>
+        <div class="wv-stat">
+          <div class="wv-rx"><span style="background:#3a6ea5">&#127881;</span><span style="background:#f4a01c">&#128077;</span> &nbsp;143</div>
+          <div>26 comments</div>
+        </div>
+        <div class="wv-act"><button>&#128077; React</button><button>&#128172; Comment</button><button>&#10150; Share</button></div>
+        <div class="wv-cmt">
+          <div class="av" style="background:<?= $wvPick('Dana Whitfield') ?>">DW</div>
+          <div class="bub"><b>Dana Whitfield</b>Appreciate it Marcus &mdash; great team effort all round! &#128591;</div>
+        </div>
+      </article>
+
+      <article class="wv-card wv-post">
+        <div class="wv-ph">
+          <div class="av" style="background:<?= $wvPick('Workplace Team') ?>">WT</div>
+          <div><div class="nm">Workplace Team</div><div class="mt">4 days ago &middot; &#127968; Office</div></div>
+          <div class="more">&#8943;</div>
+        </div>
+        <div class="wv-ptext">Summer social this Friday from 4pm on the rooftop terrace &mdash; food, music and a few surprises. Bring your team! &#127865;</div>
+        <div class="wv-pimg">Rooftop terrace &middot; Friday 4:00 PM</div>
+        <div class="wv-stat">
+          <div class="wv-rx"><span style="background:#f4a01c">&#128515;</span><span style="background:#e0566b">&#10084;</span><span style="background:#3a6ea5">&#127881;</span> &nbsp;188</div>
+          <div>41 comments &middot; 9 shares</div>
+        </div>
+        <div class="wv-act"><button>&#128077; React</button><button>&#128172; Comment</button><button>&#10150; Share</button></div>
+      </article>
+
+      <article class="wv-card wv-post">
+        <div class="wv-ph">
+          <div class="av" style="background:<?= $wvPick('Facilities') ?>">FC</div>
+          <div><div class="nm">Facilities</div><div class="mt">5 days ago &middot; &#128172; Poll</div></div>
+          <div class="more">&#8943;</div>
+        </div>
+        <div class="wv-ptext">What should we name the new collaboration room on level 3?</div>
+        <div class="wv-poll">
+          <div class="wv-opt"><span class="bar" style="width:47%"></span><span class="lb"><span>The Hive</span><span>47%</span></span></div>
+          <div class="wv-opt"><span class="bar" style="width:31%"></span><span class="lb"><span>Brainstorm Bay</span><span>31%</span></span></div>
+          <div class="wv-opt"><span class="bar" style="width:22%"></span><span class="lb"><span>The Treehouse</span><span>22%</span></span></div>
+        </div>
+        <div class="wv-stat">
+          <div class="wv-rx"><span style="background:#3a6ea5">&#128202;</span> &nbsp;73 votes</div>
+          <div>14 comments</div>
+        </div>
+        <div class="wv-act"><button>&#128077; React</button><button>&#128172; Comment</button><button>&#10150; Share</button></div>
+      </article>
+    </main>
+
+    <!-- Right -->
+    <aside class="wv-aside">
+      <div class="wv-card wv-w">
+        <h4>Upcoming Events</h4>
+        <div class="wv-ev"><div class="wv-date"><div class="d">12</div><div class="m">Jun</div></div><div><div class="et">All-Hands Town Hall</div><div class="es">10:00 AM &middot; Main Auditorium</div></div></div>
+        <div class="wv-ev"><div class="wv-date"><div class="d">14</div><div class="m">Jun</div></div><div><div class="et">Summer Social</div><div class="es">4:00 PM &middot; Rooftop Terrace</div></div></div>
+        <div class="wv-ev"><div class="wv-date"><div class="d">19</div><div class="m">Jun</div></div><div><div class="et">Lunch &amp; Learn: AI Tools</div><div class="es">12:30 PM &middot; Online</div></div></div>
+      </div>
+      <div class="wv-card wv-w">
+        <h4>Birthdays &amp; Anniversaries</h4>
+        <div class="wv-bd"><div class="av" style="background:<?= $wvPick('Sofia Reyes') ?>">SR</div><div><div class="bt">Sofia Reyes</div><div class="bs">Birthday today</div></div><span class="cake">&#127874;</span></div>
+        <div class="wv-bd"><div class="av" style="background:<?= $wvPick('Tom Kavanagh') ?>">TK</div><div><div class="bt">Tom Kavanagh</div><div class="bs">5 years at <?= $siteName ?></div></div><span class="cake">&#127881;</span></div>
+        <div class="wv-bd"><div class="av" style="background:<?= $wvPick('Aisha Khan') ?>">AK</div><div><div class="bt">Aisha Khan</div><div class="bs">Work anniversary</div></div><span class="cake">&#127880;</span></div>
+      </div>
+      <div class="wv-card wv-w">
+        <h4>New Starters</h4>
+        <div class="wv-bd"><div class="av" style="background:<?= $wvPick('Liam Foster') ?>">LF</div><div><div class="bt">Liam Foster</div><div class="bs">Product Designer</div></div></div>
+        <div class="wv-bd"><div class="av" style="background:<?= $wvPick('Grace Lin') ?>">GL</div><div><div class="bt">Grace Lin</div><div class="bs">Data Analyst</div></div></div>
+      </div>
+    </aside>
+
+    <div class="wv-foot"><?= $footer ?></div>
+  </div>
 
 <?php elseif ($type === 'blog'): ?>
 
@@ -939,30 +1112,112 @@ $blCmtInit = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', (string)$blCmtNam
       <div class="hd-name"><?= $siteName ?></div>
       <div class="hd-status">SYSTEM ONLINE &mdash; <?= htmlspecialchars(strtoupper(date('Y-m-d H:i')), ENT_QUOTES, 'UTF-8') ?></div>
     </div>
-    <?php if ($navItems): ?>
     <nav class="hd-nav">
-      <?php foreach ($navItems as $item): ?>
-      <a href="<?= htmlspecialchars($item['href'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></a>
-      <?php endforeach; ?>
+      <a href="#">SEARCH</a><a href="#">BROWSE</a><a href="#">COLLECTIONS</a><a href="#">FINDING AIDS</a><a href="#">HELP</a>
     </nav>
-    <?php endif; ?>
   </header>
   <div class="term"><span>&gt;_</span>RECORD RETRIEVED &mdash; DOCUMENT ARCHIVE SYSTEM v2.4</div>
 
+<?php
+$arPid    = (int)($page['id'] ?? 1);
+$arSlug   = (string)($page['slug'] ?? 'document');
+$arId     = str_pad((string)$arPid, 5, '0', STR_PAD_LEFT);
+$arHash   = strtoupper(substr(md5($arSlug), 0, 24));
+$arSeries = 'S-' . strtoupper(substr(md5($arSlug . 'ser'), 0, 3)) . '/' . (12 + $arPid % 40);
+$arPages  = 3 + ($arPid % 46);
+$arBox    = 'BOX ' . (10 + $arPid % 90) . " \u{00B7} FOLDER " . (1 + $arPid % 38);
+$arAcc    = 'AC-' . strtoupper(substr(md5($arSlug . 'acc'), 0, 6));
+$arRefBase = strtoupper(substr(md5($arSlug . 'ref'), 0, 4));
+$arRelated = [
+    ['id' => 'DOC-' . str_pad((string)(($arPid * 7 + 113) % 99999), 5, '0', STR_PAD_LEFT), 'title' => 'Preliminary Field Notes & Correspondence',        'yr' => 1971],
+    ['id' => 'DOC-' . str_pad((string)(($arPid * 13 + 401) % 99999), 5, '0', STR_PAD_LEFT), 'title' => 'Internal Memorandum re: Disclosure Request',      'yr' => 1973],
+    ['id' => 'DOC-' . str_pad((string)(($arPid * 19 + 877) % 99999), 5, '0', STR_PAD_LEFT), 'title' => "Appendix C \u{2014} Supporting Photographic Plates", 'yr' => 1974],
+    ['id' => 'DOC-' . str_pad((string)(($arPid * 23 + 559) % 99999), 5, '0', STR_PAD_LEFT), 'title' => 'Transcript of Recorded Interview (Partial)',      'yr' => 1976],
+    ['id' => 'DOC-' . str_pad((string)(($arPid * 29 + 233) % 99999), 5, '0', STR_PAD_LEFT), 'title' => 'Amendment & Final Disposition Sheet',             'yr' => 1981],
+];
+$arLog = [
+    ['t' => '08:14:02', 'd' => '2024-11-03', 'op' => 'TERM-04 / ARCHIVIST-217', 'ac' => 'RETRIEVE',  'ok' => true],
+    ['t' => '13:47:55', 'd' => '2025-02-19', 'op' => 'TERM-11 / RESEARCH-088',  'ac' => 'VIEW',      'ok' => true],
+    ['t' => '09:02:31', 'd' => '2025-06-30', 'op' => 'REMOTE / GUEST-AUTH',     'ac' => 'EXPORT',    'ok' => false],
+    ['t' => '16:20:09', 'd' => '2025-09-12', 'op' => 'TERM-04 / ARCHIVIST-217', 'ac' => 'RE-INDEX',  'ok' => true],
+    ['t' => '11:38:44', 'd' => '2025-12-01', 'op' => 'TERM-02 / ADMIN-001',     'ac' => 'VERIFY',    'ok' => true],
+];
+// Operator & action of the last access-log entry are editable from the admin
+$arEdit = json_decode($page['nav_json'] ?? '[]', true);
+if (is_array($arEdit)) {
+    $arLast =& $arLog[count($arLog) - 1];
+    if (trim((string)($arEdit['log_op']     ?? '')) !== '') { $arLast['op'] = $arEdit['log_op']; }
+    if (trim((string)($arEdit['log_action'] ?? '')) !== '') { $arLast['ac'] = $arEdit['log_action']; }
+    unset($arLast);
+}
+?>
   <div class="wrap">
     <div class="doc-hd">
       <div class="doc-rows">
-        <div class="doc-f"><label>Doc ID</label><value>DOC-<?= str_pad((string)($page['id'] ?? 1), 5, '0', STR_PAD_LEFT) ?></value></div>
+        <div class="doc-f"><label>Doc ID</label><value>DOC-<?= $arId ?></value></div>
         <div class="doc-f"><label>Date Filed</label><value><?= htmlspecialchars($pubDate, ENT_QUOTES, 'UTF-8') ?></value></div>
         <div class="doc-f"><label>Author</label><value><?= $author ?></value></div>
       </div>
       <div class="doc-title"><?= $pageTitle ?></div>
       <div class="doc-cls">Unclassified</div>
+      <div class="doc-meta">
+        <div class="doc-f"><label>Record Type</label><value>TEXTUAL RECORD</value></div>
+        <div class="doc-f"><label>Series</label><value><?= htmlspecialchars($arSeries, ENT_QUOTES, 'UTF-8') ?></value></div>
+        <div class="doc-f"><label>Location</label><value><?= htmlspecialchars($arBox, ENT_QUOTES, 'UTF-8') ?></value></div>
+        <div class="doc-f"><label>Pages</label><value><?= $arPages ?> (digitised)</value></div>
+        <div class="doc-f"><label>Medium</label><value>SCANNED MICROFILM</value></div>
+        <div class="doc-f"><label>Language</label><value>ENGLISH</value></div>
+        <div class="doc-f"><label>Retention</label><value>PERMANENT</value></div>
+        <div class="doc-f"><label>Access</label><value>READING ROOM &mdash; OPEN</value></div>
+        <div class="doc-f"><label>Accession</label><value><?= htmlspecialchars($arAcc, ENT_QUOTES, 'UTF-8') ?></value></div>
+        <div class="doc-f"><label>Condition</label><value>FAIR &mdash; ARCHIVAL COPY</value></div>
+        <div class="doc-f" style="grid-column:span 2"><label>SHA-256 (truncated)</label><value><?= htmlspecialchars($arHash, ENT_QUOTES, 'UTF-8') ?>&hellip;</value></div>
+      </div>
     </div>
+
     <div class="doc-body"><?= $page['content'] ?></div>
+
+    <div class="doc-sec">
+      <div class="doc-sec-h">Related Records <span><?= count($arRelated) ?> cross-references</span></div>
+      <div class="doc-sec-b">
+        <?php foreach ($arRelated as $r): ?>
+        <div class="doc-rel-row">
+          <span class="rid"><?= htmlspecialchars($r['id'], ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="rt"><?= htmlspecialchars($r['title'], ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="rx">FILED <?= (int)$r['yr'] ?></span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
+    <div class="doc-sec">
+      <div class="doc-sec-h">Access Log <span>last <?= count($arLog) ?> entries</span></div>
+      <div class="doc-sec-b">
+        <table class="doc-log">
+          <tr><th>Date</th><th>Time</th><th>Terminal / Operator</th><th>Action</th><th>Result</th></tr>
+          <?php foreach ($arLog as $l): ?>
+          <tr>
+            <td><?= htmlspecialchars($l['d'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($l['t'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($l['op'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($l['ac'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td class="<?= $l['ok'] ? 'ok' : 'dn' ?>"><?= $l['ok'] ? 'GRANTED' : 'DENIED' ?></td>
+          </tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <footer class="ft"><?= $footer ?></footer>
+  <footer class="ft">
+    <div class="ft-grid">
+      <span><?= $footer ?></span>
+      <span>NODE <b>ARC-7</b></span>
+      <span>INDEX <b>v2.4.1</b></span>
+      <span>REF <b><?= htmlspecialchars($arRefBase, ENT_QUOTES, 'UTF-8') ?></b></span>
+      <span>SESSION <b><?= htmlspecialchars(strtoupper(substr(md5($arSlug . 'sess'), 0, 8)), ENT_QUOTES, 'UTF-8') ?></b></span>
+    </div>
+  </footer>
 
 <?php elseif ($type === 'calendar'): ?>
 
@@ -1451,8 +1706,17 @@ $rcCount   = 0;
 $mapArea    = htmlspecialchars($page['site_name'] ?? 'Map', ENT_QUOTES, 'UTF-8');
 $mapSub     = htmlspecialchars($page['author'] ?? '', ENT_QUOTES, 'UTF-8');
 $mapCaption = htmlspecialchars($page['footer_text'] ?? '', ENT_QUOTES, 'UTF-8');
-$mapRaw     = json_decode($page['nav_json'] ?? '[]', true) ?: [];
-$mapPos     = [[20, 27], [71, 20], [47, 53], [29, 75], [79, 67]];
+$mapDecoded = json_decode($page['nav_json'] ?? '[]', true) ?: [];
+if (isset($mapDecoded['markers']) && is_array($mapDecoded['markers'])) {
+    $mapKind    = ($mapDecoded['type'] ?? 'street') === 'festival' ? 'festival' : 'street';
+    $mapMarkers = $mapDecoded['markers'];
+} else {
+    $mapKind    = 'street';
+    $mapMarkers = is_array($mapDecoded) ? $mapDecoded : [];
+}
+$mapPos = $mapKind === 'festival'
+    ? [[38, 50], [63, 22], [60, 52], [16, 44], [41, 80], [80, 38]]
+    : [[20, 27], [71, 20], [47, 53], [29, 75], [79, 67], [50, 14]];
 ?>
 <div class="gmap-header">
   <div class="gmap-pin-mini"></div>
@@ -1462,6 +1726,96 @@ $mapPos     = [[20, 27], [71, 20], [47, 53], [29, 75], [79, 67]];
   </div>
 </div>
 <div class="gmap-frame">
+  <?php if ($mapKind === 'festival'): ?>
+  <svg class="gmap-svg" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" font-family="Arial,sans-serif">
+    <rect width="1000" height="640" fill="#a6d785"/>
+    <ellipse cx="510" cy="340" rx="430" ry="250" fill="#aedb8e"/>
+    <!-- River -->
+    <path d="M 870,-20 C 915,120 820,220 885,360 C 935,470 855,560 905,660 L 1020,660 L 1020,-20 Z" fill="#bcdff0"/>
+    <path d="M 880,-20 C 925,120 830,220 895,360 C 945,470 865,560 915,660" stroke="#a6d2ea" stroke-width="3" fill="none"/>
+    <!-- Parking lot -->
+    <rect x="22" y="110" width="300" height="380" rx="6" fill="#9b9b9b"/>
+    <g stroke="#e8e8e8" stroke-width="2">
+      <line x1="22" y1="180" x2="322" y2="180"/><line x1="22" y1="250" x2="322" y2="250"/>
+      <line x1="22" y1="320" x2="322" y2="320"/><line x1="22" y1="390" x2="322" y2="390"/>
+      <line x1="172" y1="110" x2="172" y2="490"/>
+      <?php for ($fx = 60; $fx < 322; $fx += 38): ?><line x1="<?= $fx ?>" y1="110" x2="<?= $fx ?>" y2="180"/><line x1="<?= $fx ?>" y1="320" x2="<?= $fx ?>" y2="390"/><?php endfor; ?>
+    </g>
+    <g>
+      <rect x="34" y="124" width="24" height="42" rx="3" fill="#d9534f"/><rect x="72" y="124" width="24" height="42" rx="3" fill="#5b9bd5"/>
+      <rect x="110" y="124" width="24" height="42" rx="3" fill="#f0ad4e"/><rect x="186" y="124" width="24" height="42" rx="3" fill="#777"/>
+      <rect x="224" y="124" width="24" height="42" rx="3" fill="#5cb85c"/><rect x="262" y="124" width="24" height="42" rx="3" fill="#d9534f"/>
+      <rect x="34" y="332" width="24" height="42" rx="3" fill="#5b9bd5"/><rect x="110" y="332" width="24" height="42" rx="3" fill="#999"/>
+      <rect x="224" y="332" width="50" height="44" rx="4" fill="#e0e0e0"/>
+      <rect x="186" y="404" width="58" height="22" rx="4" fill="#4a6fa5"/><rect x="252" y="404" width="58" height="22" rx="4" fill="#c0504d"/>
+    </g>
+    <!-- Paths -->
+    <g stroke="#dccfa6" stroke-width="24" fill="none" stroke-linecap="round">
+      <path d="M 322,300 L 410,300 L 600,330 L 760,260"/>
+      <path d="M 410,300 L 410,512"/>
+      <path d="M 600,330 L 630,150"/>
+    </g>
+    <!-- Buildings -->
+    <g>
+      <rect x="350" y="60" width="150" height="80" fill="#3a3f44"/><rect x="350" y="52" width="150" height="12" fill="#2a2e33"/>
+      <rect x="520" y="78" width="120" height="64" fill="#f2f2f2" stroke="#cfcfcf"/><path d="M520,78 L580,52 L640,78 Z" fill="#dfe3e6"/>
+    </g>
+    <!-- Stage -->
+    <g>
+      <rect x="585" y="120" width="120" height="62" rx="3" fill="#6b7a8f"/>
+      <path d="M585,120 L645,92 L705,120 Z" fill="#37506b"/>
+      <rect x="600" y="132" width="90" height="38" fill="#26323f"/>
+      <g fill="#cfd6dd"><circle cx="620" cy="200" r="4"/><circle cx="640" cy="205" r="4"/><circle cx="660" cy="200" r="4"/><circle cx="680" cy="206" r="4"/><circle cx="630" cy="214" r="4"/><circle cx="668" cy="214" r="4"/></g>
+    </g>
+    <!-- Ferris wheel -->
+    <g transform="translate(380,320)" stroke="#c0392b" stroke-width="4" fill="none">
+      <line x1="0" y1="0" x2="-46" y2="118" stroke="#888" stroke-width="7"/>
+      <line x1="0" y1="0" x2="46" y2="118" stroke="#888" stroke-width="7"/>
+      <circle cx="0" cy="0" r="92"/><circle cx="0" cy="0" r="62" stroke-width="3"/>
+      <g stroke-width="3"><line x1="0" y1="-92" x2="0" y2="92"/><line x1="-92" y1="0" x2="92" y2="0"/><line x1="-65" y1="-65" x2="65" y2="65"/><line x1="65" y1="-65" x2="-65" y2="65"/></g>
+      <g fill="#3a87c8" stroke="none"><circle cx="0" cy="-92" r="10"/><circle cx="65" cy="-65" r="10"/><circle cx="92" cy="0" r="10"/><circle cx="65" cy="65" r="10"/><circle cx="0" cy="92" r="10"/><circle cx="-65" cy="65" r="10"/><circle cx="-92" cy="0" r="10"/><circle cx="-65" cy="-65" r="10"/></g>
+      <circle cx="0" cy="0" r="9" fill="#c0392b" stroke="none"/>
+    </g>
+    <!-- Red big-top tent -->
+    <g transform="translate(600,330)">
+      <ellipse cx="0" cy="58" rx="78" ry="14" fill="#000" opacity=".08"/>
+      <path d="M-72,46 H72 V70 Q0,84 -72,70 Z" fill="#f3f3f3" stroke="#d24"/>
+      <path d="M0,-66 L78,46 H-78 Z" fill="#fff"/>
+      <path d="M0,-66 L14,46 H-14 Z" fill="#d9352b"/><path d="M0,-66 L44,46 H22 Z" fill="#d9352b"/><path d="M0,-66 L-22,46 H-44 Z" fill="#d9352b"/><path d="M0,-66 L78,46 H64 Z" fill="#d9352b"/><path d="M0,-66 L-64,46 H-78 Z" fill="#d9352b"/>
+      <path d="M-78,46 q9,12 18,0 q9,12 18,0 q9,12 18,0 q9,12 18,0 q9,12 18,0 q9,12 18,0 q9,12 18,0 q9,12 18,0" fill="none" stroke="#d9352b" stroke-width="3"/>
+      <line x1="0" y1="-66" x2="0" y2="-84" stroke="#b22" stroke-width="3"/><path d="M0,-84 L18,-78 L0,-72 Z" fill="#d9352b"/>
+    </g>
+    <!-- Blue striped tents -->
+    <g transform="translate(720,250) scale(.8)">
+      <path d="M-60,40 H60 V60 Q0,72 -60,60 Z" fill="#f3f3f3" stroke="#2a72b5"/>
+      <path d="M0,-56 L66,40 H-66 Z" fill="#fff"/>
+      <path d="M0,-56 L12,40 H-12 Z" fill="#2f86c9"/><path d="M0,-56 L40,40 H20 Z" fill="#2f86c9"/><path d="M0,-56 L-20,40 H-40 Z" fill="#2f86c9"/>
+      <line x1="0" y1="-56" x2="0" y2="-72" stroke="#1f5e93" stroke-width="3"/><path d="M0,-72 L16,-66 L0,-60 Z" fill="#2f86c9"/>
+    </g>
+    <g transform="translate(800,330) scale(.7)">
+      <path d="M-60,40 H60 V60 Q0,72 -60,60 Z" fill="#f3f3f3" stroke="#2a72b5"/>
+      <path d="M0,-56 L66,40 H-66 Z" fill="#fff"/>
+      <path d="M0,-56 L12,40 H-12 Z" fill="#2f86c9"/><path d="M0,-56 L40,40 H20 Z" fill="#2f86c9"/><path d="M0,-56 L-20,40 H-40 Z" fill="#2f86c9"/>
+    </g>
+    <!-- Carousel -->
+    <g transform="translate(410,512)">
+      <ellipse cx="0" cy="40" rx="56" ry="14" fill="#000" opacity=".08"/>
+      <circle cx="0" cy="20" r="50" fill="#ede7da"/>
+      <path d="M0,-54 L54,18 H-54 Z" fill="#fff"/>
+      <path d="M0,-54 L12,18 H-12 Z" fill="#e8a33d"/><path d="M0,-54 L38,18 H18 Z" fill="#e8a33d"/><path d="M0,-54 L-18,18 H-38 Z" fill="#e8a33d"/>
+      <line x1="0" y1="-54" x2="0" y2="-70" stroke="#c98a2a" stroke-width="3"/><circle cx="0" cy="-72" r="4" fill="#e8a33d"/>
+      <g stroke="#c9b48a" stroke-width="3"><line x1="-40" y1="6" x2="-40" y2="44"/><line x1="0" y1="20" x2="0" y2="58"/><line x1="40" y1="6" x2="40" y2="44"/></g>
+    </g>
+    <!-- Trees -->
+    <g>
+      <?php
+        $ftrees = [[60,540],[120,560],[180,540],[250,560],[330,580],[420,600],[40,60],[80,30],[150,40],[240,60],[470,30],[560,40],[670,60],[770,40],[900,90],[950,200],[960,360],[940,500],[860,560],[760,560],[660,580],[560,560],[480,560]];
+        foreach ($ftrees as $t): [$tx,$ty]=$t; ?>
+      <g transform="translate(<?= $tx ?>,<?= $ty ?>)"><rect x="-3" y="8" width="6" height="14" fill="#7a5230"/><circle cx="0" cy="0" r="15" fill="#4f9d4f"/><circle cx="-10" cy="7" r="12" fill="#5aa85a"/><circle cx="10" cy="7" r="12" fill="#5aa85a"/><circle cx="0" cy="-8" r="11" fill="#62b562"/></g>
+      <?php endforeach; ?>
+    </g>
+  </svg>
+  <?php else: ?>
   <svg class="gmap-svg" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <rect width="1000" height="640" fill="#e9eaed"/>
     <!-- Parks -->
@@ -1538,9 +1892,10 @@ $mapPos     = [[20, 27], [71, 20], [47, 53], [29, 75], [79, 67]];
       <text x="828" y="290" fill="#3c4043">Bishop &amp; Co.</text>
     </g>
   </svg>
+  <?php endif; ?>
 
-  <?php foreach ($mapRaw as $i => $mk):
-    if ($i > 4) break;
+  <?php foreach ($mapMarkers as $i => $mk):
+    if ($i > 5) break;
     $label = trim((string)($mk['label'] ?? ''));
     if ($label === '') continue;
     [$px, $py] = $mapPos[$i];

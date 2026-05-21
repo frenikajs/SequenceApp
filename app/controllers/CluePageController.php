@@ -35,7 +35,7 @@ class CluePageController
 
         // nav_json holds structured data (messages, line items, markers, blog comment)
         // for these page types, not nav links
-        if ($page && in_array($page['site_type'] ?? '', ['sms', 'invoice', 'receipt', 'map', 'blog', 'calendar'], true)) {
+        if ($page && in_array($page['site_type'] ?? '', ['sms', 'invoice', 'receipt', 'map', 'blog', 'calendar', 'corporate', 'archive'], true)) {
             $navItems = [];
         } elseif ($page) {
             $navItems = json_decode($page['nav_json'] ?? '[]', true) ?: [];
@@ -112,14 +112,25 @@ class CluePageController
             $navJsonValue = json_encode($lines, JSON_UNESCAPED_UNICODE);
         } elseif ($siteType === 'map') {
             $markers = [];
-            for ($i = 1; $i <= 5; $i++) {
+            for ($i = 1; $i <= 6; $i++) {
                 $markers[] = ['label' => Security::sanitizeString($_POST['map_marker' . $i] ?? '')];
             }
-            $navJsonValue = json_encode($markers, JSON_UNESCAPED_UNICODE);
+            $mapKind = ($_POST['map_kind'] ?? 'street') === 'festival' ? 'festival' : 'street';
+            $navJsonValue = json_encode(['type' => $mapKind, 'markers' => $markers], JSON_UNESCAPED_UNICODE);
         } elseif ($siteType === 'blog') {
             $navJsonValue = json_encode([
                 'cmt_name' => Security::sanitizeString($_POST['blog_cmt_name'] ?? ''),
                 'cmt_text' => Security::sanitizeString($_POST['blog_cmt_text'] ?? ''),
+            ], JSON_UNESCAPED_UNICODE);
+        } elseif ($siteType === 'corporate') {
+            $navJsonValue = json_encode([
+                'cmt_name' => Security::sanitizeString($_POST['corp_cmt_name'] ?? ''),
+                'cmt_text' => Security::sanitizeString($_POST['corp_cmt_text'] ?? ''),
+            ], JSON_UNESCAPED_UNICODE);
+        } elseif ($siteType === 'archive') {
+            $navJsonValue = json_encode([
+                'log_op'     => Security::sanitizeString($_POST['arc_log_op'] ?? ''),
+                'log_action' => Security::sanitizeString($_POST['arc_log_action'] ?? ''),
             ], JSON_UNESCAPED_UNICODE);
         } elseif ($siteType === 'calendar') {
             $events = [];

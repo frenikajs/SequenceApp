@@ -114,6 +114,19 @@ class Security
         }
     }
 
+    // ── Security headers (sent from PHP so no .htaccess dependency) ────────────
+
+    public static function sendSecurityHeaders(): void
+    {
+        if (headers_sent()) {
+            return;
+        }
+        header('X-Frame-Options: SAMEORIGIN');
+        header('X-Content-Type-Options: nosniff');
+        header('X-XSS-Protection: 1; mode=block');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+    }
+
     // ── IP helper ─────────────────────────────────────────────────────────────
 
     public static function getClientIp(): string

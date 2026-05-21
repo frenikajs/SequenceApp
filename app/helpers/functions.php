@@ -59,6 +59,24 @@ function e(string $value): string
     return Security::escape($value);
 }
 
+/**
+ * True if rich-text HTML has real content. An "empty" Quill editor still
+ * produces markup like <p><br></p>, so a plain emptiness check isn't enough.
+ */
+function richHasContent(?string $html): bool
+{
+    if ($html === null || $html === '') {
+        return false;
+    }
+    // Embedded media (e.g. an image-only hint) is real content even though
+    // strip_tags() would discard it.
+    if (preg_match('/<(img|audio|video|iframe|source|embed|object|svg|figure)\b/i', $html)) {
+        return true;
+    }
+    $text = str_replace(["\xc2\xa0", '&nbsp;', '&#160;'], ' ', $html);
+    return trim(strip_tags($text)) !== '';
+}
+
 function csrf_field(): string
 {
     return Security::csrfField();

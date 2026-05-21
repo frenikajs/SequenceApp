@@ -90,9 +90,11 @@ class MediaController
                 jsonResponse(['success' => false, 'error' => 'Sequence not found.'], 404);
             }
             $prefix = match ($mediaSlot) {
-                'intro'  => 'intro_',
-                'finale' => 'finale_',
-                default  => 'intro_',
+                'intro'       => 'intro_',
+                'finale'      => 'finale_',
+                'intro_hint'  => 'intro_hint_',
+                'finale_hint' => 'finale_hint_',
+                default       => 'intro_',
             };
             FileUpload::delete($seq[$prefix . 'file_path'] ?? '');
             $seqModel->update($targetId, [

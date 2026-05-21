@@ -6,14 +6,16 @@ class SequenceController
     private SequenceModel   $seqModel;
     private ClueModel       $clueModel;
     private CluePageModel   $pageModel;
+    private PuzzlePageModel $puzzleModel;
     private ProgressModel   $progModel;
 
     public function __construct()
     {
-        $this->seqModel  = new SequenceModel();
-        $this->clueModel = new ClueModel();
-        $this->pageModel = new CluePageModel();
-        $this->progModel = new ProgressModel();
+        $this->seqModel    = new SequenceModel();
+        $this->clueModel   = new ClueModel();
+        $this->pageModel   = new CluePageModel();
+        $this->puzzleModel = new PuzzlePageModel();
+        $this->progModel   = new ProgressModel();
     }
 
     // ── Public sequence page ──────────────────────────────────────────────────
@@ -34,14 +36,31 @@ class SequenceController
         $theme  = $this->seqModel->getTheme((int)$sequence['id']);
         $css    = $this->seqModel->buildCss($theme);
         $clues   = $this->clueModel->getBySequenceId((int)$sequence['id']);
-        $pageMap = $this->pageModel->getMapForClues(array_map('intval', array_column($clues, 'id')));
+        $clueIds   = array_map('intval', array_column($clues, 'id'));
+        $pageMap   = $this->pageModel->getMapForClues($clueIds);
+        $puzzleMap = $this->puzzleModel->getMapForClues($clueIds);
         foreach ($clues as &$clue) {
             $p = $pageMap[(int)$clue['id']] ?? null;
             $clue['page_slug'] = $p ? $p['slug']      : null;
             $clue['page_type'] = $p ? $p['site_type'] : null;
+            $z = $puzzleMap[(int)$clue['id']] ?? null;
+            $clue['puzzle_slug'] = $z ? $z['slug'] : null;
         }
         unset($clue);
         $prog   = $this->getSessionProgress((int)$sequence['id']);
+
+        // If no intro access code is configured, there's no gate before Clue 1 —
+        // reveal it automatically so players aren't stuck on an empty box.
+        if ($sequence['type'] !== 'open'
+            && !empty($prog['started'])
+            && (int)$prog['unlocked_clues'] === 0
+            && !$prog['ready_to_solve']
+            && !$prog['solution_shown']
+            && trim((string)($sequence['intro_access_code'] ?? '')) === ''
+            && count($clues) > 0) {
+            $prog['unlocked_clues'] = 1;
+            $this->saveSessionProgress((int)$sequence['id'], $prog);
+        }
 
         $this->seqModel->incrementView((int)$sequence['id']);
 
@@ -91,36 +110,35 @@ class SequenceController
             redirect('/s/' . $slug);
         }
 
-        // Intro shown, in open mode → all clues visible already, check finale
+        // ── OPEN MODE: all clues visible → Solution Code reveals the Solution ──
         if ($sequence['type'] === 'open') {
-            if (!$prog['finale_unlocked']) {
-                if ($sequence['finale_requires_code']) {
-                    if ($this->codesMatch($code, $sequence['finale_code'] ?? '')) {
-                        $prog['finale_unlocked'] = true;
-                        $prog['completed']       = true;
-                        $this->saveSessionProgress($id, $prog);
-                        $this->finalizeProgress($id, $prog);
-                        flash('success', 'finale_unlocked');
-                    } else {
-                        flash('error', 'Incorrect finale code. Keep searching.');
-                    }
+            if (!$prog['solution_shown']) {
+                if (!$sequence['finale_requires_code']
+                    || $this->codesMatch($code, $sequence['finale_code'] ?? '')) {
+                    $prog['ready_to_solve'] = true;
+                    $prog['solution_shown'] = true;
+                    $prog['finale_unlocked'] = true;
+                    $prog['completed']       = true;
+                    $this->saveSessionProgress($id, $prog);
+                    $this->finalizeProgress($id, $prog);
+                    flash('success', 'solution_unlocked');
+                } else {
+                    flash('error', 'Incorrect solution code. Keep trying.');
                 }
             }
             redirect('/s/' . $slug);
         }
 
-        // Sequential mode: unlock next clue or finale
+        // ── SEQUENTIAL MODE ──
         $unlocked = (int)$prog['unlocked_clues'];
 
-        if ($unlocked < $total) {
-            // Expect the access_code for the next locked clue
-            $nextClue = $clues[$unlocked] ?? null;
-            if ($nextClue && $this->codesMatch($code, $nextClue['access_code'])) {
-                $prog['unlocked_clues'] = $unlocked + 1;
+        // Stage A — Introduction screen: enter the introduction access code to reveal Clue 1
+        if (!$prog['ready_to_solve'] && !$prog['solution_shown'] && $unlocked === 0) {
+            $introCode = trim((string)($sequence['intro_access_code'] ?? ''));
+            if ($introCode === '' || $this->codesMatch($code, $introCode)) {
+                $prog['unlocked_clues'] = 1;
                 $this->saveSessionProgress($id, $prog);
-                $this->progModel->upsertProgress(session_id(), $id, [
-                    'unlocked_clues' => $unlocked + 1,
-                ]);
+                $this->progModel->upsertProgress(session_id(), $id, ['unlocked_clues' => 1]);
                 flash('success', 'clue_unlocked');
             } else {
                 flash('error', 'Incorrect code. Keep searching for clues.');
@@ -128,16 +146,40 @@ class SequenceController
             redirect('/s/' . $slug);
         }
 
-        // All clues unlocked → finale code
-        if (!$prog['finale_unlocked'] && $sequence['finale_requires_code']) {
-            if ($this->codesMatch($code, $sequence['finale_code'] ?? '')) {
+        // Stage B — Viewing Clue N: enter THIS clue's access code to reveal the next step
+        if (!$prog['ready_to_solve'] && !$prog['solution_shown']
+            && $unlocked >= 1 && $unlocked <= $total) {
+            $currentClue = $clues[$unlocked - 1] ?? null;
+            if ($currentClue && $this->codesMatch($code, $currentClue['access_code'])) {
+                if ($unlocked < $total) {
+                    $prog['unlocked_clues'] = $unlocked + 1;
+                    flash('success', 'clue_unlocked');
+                } else {
+                    $prog['ready_to_solve'] = true;
+                    flash('success', 'ready_to_solve');
+                }
+                $this->saveSessionProgress($id, $prog);
+                $this->progModel->upsertProgress(session_id(), $id, [
+                    'unlocked_clues' => (int)$prog['unlocked_clues'],
+                ]);
+            } else {
+                flash('error', 'Incorrect code. Keep searching for clues.');
+            }
+            redirect('/s/' . $slug);
+        }
+
+        // Stage C — "Ready to Solve?": enter the Solution Code to reveal the Solution
+        if ($prog['ready_to_solve'] && !$prog['solution_shown']) {
+            if (!$sequence['finale_requires_code']
+                || $this->codesMatch($code, $sequence['finale_code'] ?? '')) {
+                $prog['solution_shown']  = true;
                 $prog['finale_unlocked'] = true;
                 $prog['completed']       = true;
                 $this->saveSessionProgress($id, $prog);
                 $this->finalizeProgress($id, $prog);
-                flash('success', 'finale_unlocked');
+                flash('success', 'solution_unlocked');
             } else {
-                flash('error', 'Incorrect finale code. You\'re so close!');
+                flash('error', 'Incorrect solution code. You\'re so close!');
             }
         }
 
@@ -162,9 +204,10 @@ class SequenceController
     {
         return $_SESSION['seq'][$seqId] ?? [
             'started'         => false,
-            'intro_shown'     => false,
-            'unlocked_clues'  => 0,
-            'finale_unlocked' => false,
+            'unlocked_clues'  => 0,      // 0 = Introduction screen (needs intro access code)
+            'ready_to_solve'  => false,  // all clues done → "Ready to Solve?" screen
+            'solution_shown'  => false,  // solution code entered → Solution revealed
+            'finale_unlocked' => false,  // kept for progress/analytics compatibility
             'completed'       => false,
             'start_time'      => time(),
         ];
