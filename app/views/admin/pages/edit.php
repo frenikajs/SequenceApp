@@ -7,6 +7,24 @@ $seqId   = (int)$clue['sequence_id'];
 $isNew   = ($page === null);
 $slug    = $page['slug']         ?? '';
 $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
+
+// Receipt kind + delivery time are referenced both at the top (next to the
+// Date input) and in the Receipt panel further down. Pre-compute them here so
+// both spots have the same values without duplicating the parsing logic.
+$rcptKind = 'store';
+$rcptTime = '';
+if ($siteType === 'receipt') {
+    if (isset($_POST['rcpt_kind']) || isset($_POST['rcpt_time'])) {
+        $rcptKind = in_array($_POST['rcpt_kind'] ?? 'store', ['store', 'delivery'], true) ? $_POST['rcpt_kind'] : 'store';
+        $rcptTime = $_POST['rcpt_time'] ?? '';
+    } elseif ($page) {
+        $__rawTopRc = json_decode($page['nav_json'] ?? '[]', true) ?: [];
+        if (is_array($__rawTopRc) && ($__rawTopRc['type'] ?? '') === 'delivery') {
+            $rcptKind = 'delivery';
+            $rcptTime = (string)($__rawTopRc['time'] ?? '');
+        }
+    }
+}
 ?>
 
 <?php if (!empty($errors)): ?>
@@ -32,10 +50,16 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
       /p/<?= e($page['slug']) ?> &#8599;
     </a>
   </div>
+  <div class="analytic-item">
+    <a href="<?= url('p/' . $page['slug']) ?>?print=1" target="_blank" class="btn btn-ghost btn-sm"
+       title="Opens the page so you can print or save it as a PDF">
+      🖨 Print / Save ↗
+    </a>
+  </div>
 </div>
 <?php endif; ?>
 
-<form method="POST" action="<?= url('admin/clues/' . $clueId . '/page') ?>" id="page-form">
+<form method="POST" action="<?= url('admin/clues/' . $clueId . '/page') ?>" id="page-form" data-autosave="page-<?= $clueId ?>">
   <?= csrf_field() ?>
 
   <div class="form-grid">
@@ -44,7 +68,7 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
 
       <!-- Site type selector -->
       <div class="card">
-        <div class="card-header"><h2>Site Type</h2></div>
+        <div class="card-header"><h2>Clue Type</h2></div>
         <div class="card-body">
           <div class="site-type-grid">
             <?php
@@ -57,8 +81,9 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
               'inbox'       => ['&#9993;',   'Email Inbox',     'Outlook-style email inbox'],
               'sms'         => ['&#128172;', 'Text Messages',   'iOS iMessage conversation'],
               'invoice'     => ['&#129534;', 'Invoice',         'Professional invoice sheet'],
-              'receipt'     => ['&#129534;', 'Receipt',         'Store receipt'],
-              'map'         => ['&#128506;', 'Map',             'Street or festival map with up to 6 pins'],
+              'receipt'     => ['&#129534;', 'Receipt',         'Store / Delivery Receipt'],
+              'map'         => ['&#128506;', 'Map',             'Street, festival, or house-floorplan view with up to 6 pins'],
+              'access_log'  => ['&#128221;', 'Access Log',      'Sign-in/sign-out log with date, time, initials, description'],
             ];
             foreach ($types as $val => [$icon, $label, $desc]):
               $checked = $siteType === $val ? 'checked' : '';
@@ -94,6 +119,12 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
               <label id="lbl-date"></label>
               <input type="date" name="publish_date" id="fld-date" onchange="calSyncDays()"
                      value="<?= e($page['publish_date'] ?? ($_POST['publish_date'] ?? '')) ?>">
+            </div>
+            <div class="form-group" id="grp-time-delivery"
+                 style="flex:0 0 auto;<?= ($siteType === 'receipt' && ($rcptKind ?? 'store') === 'delivery') ? '' : 'display:none' ?>">
+              <label>Delivery Time</label>
+              <input type="time" name="rcpt_time" id="fld-rcpt-time"
+                     value="<?= e($rcptTime ?? '') ?>">
             </div>
           </div>
           <div class="form-group" id="grp-body" <?= $siteType === 'sms' ? 'style="display:none"' : '' ?>>
@@ -170,37 +201,132 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
           </div>
 
           <?php
-          $rcptLines = [['item'=>'','price'=>''], ['item'=>'','price'=>''], ['item'=>'','price'=>''], ['item'=>'','price'=>'']];
+          $rcptLines    = [['item'=>'','price'=>''], ['item'=>'','price'=>''], ['item'=>'','price'=>''], ['item'=>'','price'=>'']];
+          // $rcptKind and $rcptTime are lifted to the top of this view (they're
+          // also used next to the Date input). Defaults below for store-only fields.
+          $rcptAddress  = '';
+          $rcptNotes    = '';
+          $rcptDelivery = array_fill(0, 6, ['item'=>'', 'room'=>'']);
           if ($siteType === 'receipt') {
-              if (isset($_POST['rcpt_item1'])) {
+              $__posted = isset($_POST['rcpt_kind']) || isset($_POST['rcpt_item1']) || isset($_POST['rcpt_ditem1']);
+              if ($__posted) {
+                  $rcptAddress = $_POST['rcpt_address'] ?? '';
+                  $rcptNotes   = $_POST['rcpt_notes']   ?? '';
                   for ($__i = 0; $__i < 4; $__i++) {
                       $rcptLines[$__i] = [
                           'item'  => $_POST['rcpt_item'  . ($__i + 1)] ?? '',
                           'price' => $_POST['rcpt_price' . ($__i + 1)] ?? '',
                       ];
                   }
+                  for ($__i = 0; $__i < 6; $__i++) {
+                      $rcptDelivery[$__i] = [
+                          'item' => $_POST['rcpt_ditem' . ($__i + 1)] ?? '',
+                          'room' => $_POST['rcpt_droom' . ($__i + 1)] ?? '',
+                      ];
+                  }
               } elseif ($page) {
                   $__raw = json_decode($page['nav_json'] ?? '[]', true) ?: [];
-                  foreach ($__raw as $__i => $__row) {
-                      if ($__i < 4) $rcptLines[$__i] = [
-                          'item'  => $__row['item']  ?? '',
-                          'price' => $__row['price'] ?? '',
-                      ];
+                  if (is_array($__raw) && ($__raw['type'] ?? '') === 'delivery') {
+                      // $rcptKind / $rcptTime already set by the lifted prefill above.
+                      $rcptAddress = (string)($__raw['address'] ?? '');
+                      $rcptNotes   = (string)($__raw['notes']   ?? '');
+                      foreach (($__raw['items'] ?? []) as $__i => $__row) {
+                          if ($__i < 6) $rcptDelivery[$__i] = [
+                              'item' => (string)($__row['item'] ?? ''),
+                              'room' => (string)($__row['room'] ?? ''),
+                          ];
+                      }
+                  } else {
+                      foreach ($__raw as $__i => $__row) {
+                          if ($__i < 4 && is_array($__row)) $rcptLines[$__i] = [
+                              'item'  => $__row['item']  ?? '',
+                              'price' => $__row['price'] ?? '',
+                          ];
+                      }
                   }
               }
           }
           ?>
           <div class="form-group" id="grp-receipt" <?= $siteType !== 'receipt' ? 'style="display:none"' : '' ?>>
-            <label>Line Items</label>
-            <?php for ($__i = 0; $__i < 4; $__i++): ?>
+            <label>Receipt Type</label>
+            <select name="rcpt_kind" id="rcpt-kind" class="inv-field" style="margin-bottom:.8rem">
+              <option value="store"    <?= $rcptKind === 'store'    ? 'selected' : '' ?>>Store receipt</option>
+              <option value="delivery" <?= $rcptKind === 'delivery' ? 'selected' : '' ?>>Delivery receipt</option>
+            </select>
+
+            <div id="grp-rcpt-store" <?= $rcptKind !== 'store' ? 'style="display:none"' : '' ?>>
+              <label>Line Items</label>
+              <?php for ($__i = 0; $__i < 4; $__i++): ?>
+              <div class="rcpt-line">
+                <input type="text" name="rcpt_item<?= $__i + 1 ?>" class="inv-field"
+                       placeholder="Item <?= $__i + 1 ?>" value="<?= e($rcptLines[$__i]['item']) ?>">
+                <input type="number" step="any" min="0" name="rcpt_price<?= $__i + 1 ?>" class="inv-field rcpt-price"
+                       placeholder="Price" value="<?= e($rcptLines[$__i]['price']) ?>">
+              </div>
+              <?php endfor; ?>
+              <small class="inv-hint">Total is the sum of all item prices.</small>
+            </div>
+
+            <div id="grp-rcpt-delivery" <?= $rcptKind !== 'delivery' ? 'style="display:none"' : '' ?>>
+              <label>Delivery Address</label>
+              <textarea name="rcpt_address" class="inv-field" rows="3"
+                        placeholder="123 Oakwood Lane&#10;Greenfield, NC 28210"><?= e($rcptAddress) ?></textarea>
+
+              <label style="margin-top:.9rem">Items (up to 6)</label>
+              <?php for ($__i = 0; $__i < 6; $__i++): ?>
+              <div class="rcpt-line">
+                <input type="text" name="rcpt_ditem<?= $__i + 1 ?>" class="inv-field"
+                       placeholder="Item <?= $__i + 1 ?> (e.g. Leather Sectional)" value="<?= e($rcptDelivery[$__i]['item']) ?>">
+                <input type="text" name="rcpt_droom<?= $__i + 1 ?>" class="inv-field rcpt-room"
+                       placeholder="Room (e.g. Living Room)" value="<?= e($rcptDelivery[$__i]['room']) ?>">
+              </div>
+              <?php endfor; ?>
+
+              <label style="margin-top:.9rem">Delivery Notes</label>
+              <textarea name="rcpt_notes" class="inv-field" rows="3"
+                        placeholder="Driver: ring twice. Leave at side door if no answer."><?= e($rcptNotes) ?></textarea>
+            </div>
+          </div>
+
+          <?php
+          // Access Log entries (sign-in/sign-out style: time / initials / desc).
+          $alogEntries = array_fill(0, 10, ['time'=>'', 'initials'=>'', 'desc'=>'']);
+          if ($siteType === 'access_log') {
+              if (isset($_POST['log_time1'])) {
+                  for ($__i = 0; $__i < 10; $__i++) {
+                      $alogEntries[$__i] = [
+                          'time'     => $_POST['log_time'     . ($__i + 1)] ?? '',
+                          'initials' => $_POST['log_initials' . ($__i + 1)] ?? '',
+                          'desc'     => $_POST['log_desc'     . ($__i + 1)] ?? '',
+                      ];
+                  }
+              } elseif ($page) {
+                  $__raw = json_decode($page['nav_json'] ?? '[]', true) ?: [];
+                  $__rows = (is_array($__raw) && isset($__raw['entries']) && is_array($__raw['entries']))
+                      ? $__raw['entries'] : (is_array($__raw) ? $__raw : []);
+                  foreach ($__rows as $__i => $__row) {
+                      if ($__i < 10 && is_array($__row)) $alogEntries[$__i] = [
+                          'time'     => (string)($__row['time']     ?? ''),
+                          'initials' => (string)($__row['initials'] ?? ''),
+                          'desc'     => (string)($__row['desc']     ?? ''),
+                      ];
+                  }
+              }
+          }
+          ?>
+          <div class="form-group" id="grp-accesslog" <?= $siteType !== 'access_log' ? 'style="display:none"' : '' ?>>
+            <label>Log Entries (up to 10)</label>
+            <?php for ($__i = 0; $__i < 10; $__i++): ?>
             <div class="rcpt-line">
-              <input type="text" name="rcpt_item<?= $__i + 1 ?>" class="inv-field"
-                     placeholder="Item <?= $__i + 1 ?>" value="<?= e($rcptLines[$__i]['item']) ?>">
-              <input type="number" step="any" min="0" name="rcpt_price<?= $__i + 1 ?>" class="inv-field rcpt-price"
-                     placeholder="Price" value="<?= e($rcptLines[$__i]['price']) ?>">
+              <input type="text" name="log_time<?= $__i + 1 ?>" class="inv-field alog-time"
+                     placeholder="Time (e.g. 09:14)" value="<?= e($alogEntries[$__i]['time']) ?>">
+              <input type="text" name="log_initials<?= $__i + 1 ?>" class="inv-field alog-initials"
+                     placeholder="Initials" maxlength="6" value="<?= e($alogEntries[$__i]['initials']) ?>">
+              <input type="text" name="log_desc<?= $__i + 1 ?>" class="inv-field"
+                     placeholder="Action / item / description" value="<?= e($alogEntries[$__i]['desc']) ?>">
             </div>
             <?php endfor; ?>
-            <small class="inv-hint">Total is the sum of all item prices.</small>
+            <small class="inv-hint">Title (set in the Log Title field below) and Date (set in the Date field above) appear at the top of the log.</small>
           </div>
 
           <?php
@@ -224,13 +350,14 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
                   }
               }
           }
-          if (!in_array($mapKind, ['street', 'festival'], true)) { $mapKind = 'street'; }
+          if (!in_array($mapKind, ['street', 'festival', 'floorplan'], true)) { $mapKind = 'street'; }
           ?>
           <div class="form-group" id="grp-map" <?= $siteType !== 'map' ? 'style="display:none"' : '' ?>>
             <label>Map Type</label>
             <select name="map_kind" class="inv-field" style="margin-bottom:.75rem">
               <option value="street" <?= $mapKind === 'street' ? 'selected' : '' ?>>Street Map</option>
               <option value="festival" <?= $mapKind === 'festival' ? 'selected' : '' ?>>Festival</option>
+              <option value="floorplan" <?= $mapKind === 'floorplan' ? 'selected' : '' ?>>Floorplan (house blueprint)</option>
             </select>
             <label>Map Markers</label>
             <?php for ($__i = 0; $__i < 6; $__i++): ?>
@@ -241,8 +368,9 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
                      value="<?= e($mapMarkers[$__i]) ?>">
             </div>
             <?php endfor; ?>
-            <small class="inv-hint">Pins are auto-placed on the chosen fake map. Empty markers are hidden.</small>
+            <small class="inv-hint">Street &amp; Festival: pins are auto-placed on a fake map (empty markers are hidden). Floorplan: the six markers name the six rooms (1&ndash;3 down the left, 4&ndash;6 down the right) of a fixed house blueprint &mdash; every room opens into a central hallway with a main entrance, 3 rooms have windows, two rooms connect by a door, two share a hidden passage, and one has an exterior door.</small>
           </div>
+
 
           <?php
           $blogCmtName = '';
@@ -396,12 +524,12 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
         <div class="card-body">
 
           <div class="form-group">
-            <label>URL Slug <span class="req">*</span></label>
+            <label>URL Slug</label>
             <div class="input-prefix">
               <span class="prefix-text">/p/</span>
-              <input type="text" name="slug" id="slug-field" required
+              <input type="text" name="slug" id="slug-field"
                      value="<?= e($page['slug'] ?? ($_POST['slug'] ?? '')) ?>"
-                     placeholder="the-daily-record-1987">
+                     placeholder="leave blank to use the site name">
             </div>
             <small>Shareable link you paste into clue text.</small>
           </div>
@@ -439,6 +567,18 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
           </div>
 
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header"><h2>🗂️ Reward (Evidence Locker)</h2></div>
+    <div class="card-body">
+      <p class="small muted" style="margin-bottom:.75rem">The discovery the player banks from this page. Only reward content appears in the Evidence Locker — the decoy page itself stays a decoy.</p>
+      <div class="form-group">
+        <label>Reward Content <span class="muted">(optional)</span></label>
+        <div class="quill-editor" id="reward-editor"></div>
+        <input type="hidden" name="reward_content" id="reward-content-hidden">
       </div>
     </div>
   </div>
@@ -495,6 +635,9 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
 .rcpt-line{display:flex;gap:.5rem;margin-bottom:.5rem}
 .rcpt-line .inv-field{margin-bottom:0;flex:1}
 .rcpt-line .rcpt-price{max-width:120px;flex:none}
+.rcpt-line .rcpt-room{max-width:200px;flex:none}
+.rcpt-line .alog-time{max-width:130px;flex:none}
+.rcpt-line .alog-initials{max-width:90px;flex:none;text-transform:uppercase}
 .map-marker-row{display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center}
 .map-marker-num{width:24px;height:24px;flex:none;border-radius:50%;background:#ea4335;color:#fff;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .map-marker-row .inv-field{margin-bottom:0;flex:1}
@@ -514,6 +657,7 @@ $siteType = $page['site_type']  ?? ($_POST['site_type'] ?? 'news');
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 const PAGE_CONTENT   = <?= json_encode($page['content'] ?? '') ?>;
+const REWARD_CONTENT = <?= json_encode($page['reward_content'] ?? '') ?>;
 const INITIAL_TYPE   = <?= json_encode($siteType) ?>;
 
 const FIELD_CONFIG = {
@@ -572,6 +716,34 @@ const FIELD_CONFIG = {
     footer:       'Footer Message',
     footerPh:     'e.g. Thank you for shopping with us!',
     showNav:      false,
+  },
+  access_log: {
+    cardTitle:    'Access Log Details',
+    title:        'Equipment / Item Description',
+    titlePh:      'e.g. Server Room Access Log',
+    author:       'Logged By / Department',
+    authorPh:     'e.g. Facilities Dept.',
+    date:         'Log Date',
+    body:         'Body',
+    sitename:     'Log Title',
+    sitenamePh:   'e.g. Equipment Maintenance Log',
+    footer:       'Footer / Reference',
+    footerPh:     'e.g. Form FM-103 (Rev. 04/2024)',
+    showNav:      false,
+  },
+  // Receipt -> Delivery kind overrides the four meta labels that change meaning
+  // on a delivery receipt (page_title = Customer, author = Driver, etc.).
+  _receiptDelivery: {
+    cardTitle:    'Delivery Receipt Details',
+    title:        'Customer',
+    titlePh:      'e.g. Janet Hollister',
+    author:       'Driver',
+    authorPh:     'e.g. Marcus T. — Truck 14',
+    date:         'Delivery Date',
+    sitename:     'Company Name',
+    sitenamePh:   'e.g. Greenway Furniture Co.',
+    footer:       'Footer Message',
+    footerPh:     'e.g. Thank you — inspect items before signing.',
   },
   map: {
     cardTitle:    'Map Details',
@@ -660,7 +832,14 @@ const FIELD_CONFIG = {
 };
 
 function applyTypeConfig(type) {
-  const cfg = FIELD_CONFIG[type] || FIELD_CONFIG._default;
+  let cfg = FIELD_CONFIG[type] || FIELD_CONFIG._default;
+  // Receipt has two kinds — a delivery receipt re-labels Customer / Driver / etc.
+  if (type === 'receipt') {
+    const kindEl = document.getElementById('rcpt-kind');
+    if (kindEl && kindEl.value === 'delivery') {
+      cfg = Object.assign({}, cfg, FIELD_CONFIG._receiptDelivery);
+    }
+  }
   document.getElementById('content-card-title').textContent    = cfg.cardTitle;
   document.getElementById('lbl-title-text').textContent        = cfg.title;
   document.getElementById('fld-title').placeholder             = cfg.titlePh;
@@ -673,12 +852,18 @@ function applyTypeConfig(type) {
   document.getElementById('lbl-footer').textContent            = cfg.footer;
   document.getElementById('fld-footer').placeholder            = cfg.footerPh;
   document.getElementById('grp-nav').style.display             = cfg.showNav ? '' : 'none';
-  const noBody = (type === 'sms' || type === 'invoice' || type === 'receipt' || type === 'map' || type === 'calendar');
+  const noBody = (type === 'sms' || type === 'invoice' || type === 'receipt' || type === 'map' || type === 'calendar' || type === 'access_log');
   document.getElementById('grp-body').style.display            = noBody ? 'none' : '';
   document.getElementById('grp-sms').style.display             = (type === 'sms') ? '' : 'none';
   document.getElementById('grp-invoice').style.display         = (type === 'invoice') ? '' : 'none';
   document.getElementById('grp-receipt').style.display         = (type === 'receipt') ? '' : 'none';
+  // Delivery Time input sits next to the Date input; visible only when receipt
+  // is selected AND the kind dropdown is on "delivery".
+  var __rcKindEl = document.getElementById('rcpt-kind');
+  var __dlvNow   = (type === 'receipt' && __rcKindEl && __rcKindEl.value === 'delivery');
+  document.getElementById('grp-time-delivery').style.display    = __dlvNow ? '' : 'none';
   document.getElementById('grp-map').style.display             = (type === 'map') ? '' : 'none';
+  document.getElementById('grp-accesslog').style.display       = (type === 'access_log') ? '' : 'none';
   document.getElementById('grp-blogcomment').style.display     = (type === 'blog') ? '' : 'none';
   document.getElementById('grp-corpcomment').style.display      = (type === 'corporate') ? '' : 'none';
   document.getElementById('grp-archivelog').style.display       = (type === 'archive') ? '' : 'none';
@@ -686,28 +871,44 @@ function applyTypeConfig(type) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const pageQ = initQuill('#page-editor', PAGE_CONTENT);
+  const pageQ   = initQuill('#page-editor', PAGE_CONTENT);
+  const rewardQ = initQuill('#reward-editor', REWARD_CONTENT);
   document.getElementById('page-form').addEventListener('submit', function () {
     document.getElementById('page-content-hidden').value = pageQ.root.innerHTML;
+    document.getElementById('reward-content-hidden').value = rewardQ.root.innerHTML;
   });
 
-  // Auto-generate slug from page title if slug is empty
-  const titleInput = document.getElementById('fld-title');
-  const slugField  = document.getElementById('slug-field');
-  titleInput.addEventListener('input', function () {
-    if (slugField.value === '') {
-      slugField.value = this.value
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .trim()
-        .replace(/\s+/g, '-')
-        .substring(0, 80);
-    }
-  });
+  // For a new page, default the slug to "<sequence-title>-<clue-type>",
+  // keeping it in sync with the chosen type until the admin edits the slug.
+  document.getElementById('slug-field').addEventListener('input', function () { slugEdited = true; });
 
   applyTypeConfig(INITIAL_TYPE);
+  autoPageSlug();
   calSyncDays();
+
+  // Receipt: swap Store vs Delivery sub-panels AND re-apply the meta labels
+  // (Customer / Driver / etc. when kind is delivery; Store Address / Cashier
+  // when kind is store).
+  var rcKind = document.getElementById('rcpt-kind');
+  if (rcKind) {
+    rcKind.addEventListener('change', function () {
+      document.getElementById('grp-rcpt-store').style.display    = (rcKind.value === 'store')    ? '' : 'none';
+      document.getElementById('grp-rcpt-delivery').style.display = (rcKind.value === 'delivery') ? '' : 'none';
+      applyTypeConfig('receipt');
+    });
+  }
 });
+
+const SEQ_SLUG = <?= json_encode(slugify(is_array($sequence ?? null) ? ($sequence['title'] ?? '') : '')) ?>;
+const IS_NEW   = <?= $isNew ? 'true' : 'false' ?>;
+let slugEdited = false;
+
+function autoPageSlug() {
+  if (!IS_NEW || slugEdited) return;
+  const sel = document.querySelector('input[name="site_type"]:checked');
+  const t = sel ? sel.value : INITIAL_TYPE;
+  document.getElementById('slug-field').value = (SEQ_SLUG ? SEQ_SLUG + '-' : '') + t;
+}
 
 function calSyncDays() {
   const dEl = document.getElementById('fld-date');
@@ -732,6 +933,7 @@ function markSelected(radio) {
   document.querySelectorAll('.site-type-card').forEach(c => c.classList.remove('selected'));
   radio.closest('.site-type-card').classList.add('selected');
   applyTypeConfig(radio.value);
+  autoPageSlug();
 }
 
 function addNavRow() {

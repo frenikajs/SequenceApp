@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="200" viewBox="0 0 480 200">
+  <!-- Repeatable poolside: sandy strip with palm trees, a beach umbrella and a
+       deck chair, sitting just above the water line. -->
+  <!-- sandy ground -->
+  <rect x="0" y="168" width="480" height="32" fill="#f1dca0"/>
+  <rect x="0" y="168" width="480" height="6" fill="#e6cd8a"/>
+
+  <!-- palm tree 1 -->
+  <path d="M60 170 C56 130 58 96 64 80 C66 96 64 130 70 170 Z" fill="#8a5a2b"/>
+  <g fill="#2e9e6b">
+    <path d="M64 82 C40 70 24 74 14 86 C30 80 48 82 64 92 Z"/>
+    <path d="M64 82 C88 70 104 74 114 86 C98 80 80 82 64 92 Z"/>
+    <path d="M64 80 C54 58 40 48 24 48 C44 52 56 64 64 88 Z"/>
+    <path d="M64 80 C74 58 88 48 104 48 C84 52 72 64 64 88 Z"/>
+    <path d="M64 80 C62 56 66 40 76 30 C70 50 68 64 70 86 Z"/>
+  </g>
+  <circle cx="64" cy="82" r="7" fill="#246b4d"/>
+
+  <!-- beach umbrella -->
+  <rect x="236" y="96" width="5" height="78" fill="#c9803a"/>
+  <path d="M200 100 a38 30 0 0 1 76 0 Z" fill="#ff5252"/>
+  <path d="M200 100 a38 30 0 0 1 19 0 Z" fill="#fff"/>
+  <path d="M238 100 a38 30 0 0 1 19 0 Z" fill="#fff"/>
+
+  <!-- deck chair -->
+  <g fill="#ff8a5c">
+    <rect x="300" y="150" width="56" height="10" rx="3"/>
+    <rect x="300" y="120" width="12" height="40" rx="3" transform="rotate(28 306 140)"/>
+  </g>
+
+  <!-- palm tree 2 (smaller, right) -->
+  <path d="M412 172 C409 142 411 116 416 104 C418 116 416 142 420 172 Z" fill="#8a5a2b"/>
+  <g fill="#2e9e6b">
+    <path d="M416 106 C398 96 386 99 378 108 C391 103 404 105 416 113 Z"/>
+    <path d="M416 106 C434 96 446 99 454 108 C441 103 428 105 416 113 Z"/>
+    <path d="M416 104 C408 86 397 79 385 79 C400 82 409 91 416 110 Z"/>
+    <path d="M416 104 C424 86 435 79 447 79 C432 82 423 91 416 110 Z"/>
+  </g>
+  <circle cx="416" cy="106" r="6" fill="#246b4d"/>
+</svg>

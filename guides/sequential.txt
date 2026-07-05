@@ -1,0 +1,218 @@
+HOW TO PLAY — SEQUENTIAL MYSTERY
+=================================
+
+GOAL
+----
+Work your way through a series of clues, one at a time. Each clue
+gives you information (and sometimes a puzzle to solve) that produces
+an access code. Enter that code to unlock the next clue. Unlock all
+the clues, then solve the final mystery.
+
+
+STARTING THE GAME
+-----------------
+Enter the start code you were given to open the case. The game begins
+with your first clue (or an introduction clue, if the mystery has one).
+
+
+PROGRESS BAR
+------------
+The bar at the top of the page shows how many clues you've unlocked
+out of the total (e.g. "3 / 8 clues"). Use it to track how far along
+you are. A timer in the corner tracks how long you've been
+investigating.
+
+
+READING CLUES
+-------------
+Each clue is displayed as a card on the page. Read it carefully —
+the information inside will help you figure out the access code to
+unlock the next clue. New clues animate in when they're revealed.
+
+
+ACCESS CODES — UNLOCKING NEW CLUES
+-----------------------------------
+At the bottom of the page (below your current clues) you'll see a
+locked gate with a text box. This is where you enter the access code
+to move forward.
+
+  1. Study the current clue (and any associated evidence) carefully.
+  2. Figure out the code from the clue's information or puzzle.
+  3. Type the code into the box and tap UNLOCK (or press Enter).
+  4. If correct, the next clue is revealed.
+  5. If wrong, you'll see an error — double-check your work and try again.
+
+  Codes are not case-sensitive. Spaces are usually ignored.
+
+
+NEED A HINT?
+------------
+Stuck on figuring out a code? Look below the code-entry box for the
+"💡 Need a hint?" button.
+
+  • Tap it to REVEAL a hint for the current step.
+  • Tap it again to HIDE the hint.
+
+Hints are optional — try to solve it on your own first!
+
+
+LOCKED CLUES
+------------
+Clues you haven't reached yet appear as grey locked indicators (🔒)
+below your current gate. You'll unlock them one by one as you progress.
+
+
+CLUE PAGES — EXTRA EVIDENCE
+----------------------------
+Some clues include a link to a special page with more details — this
+could be an email inbox, a text conversation, an invoice, a receipt,
+a map, a calendar, an access log, or another type of document.
+
+  • Tap the link card on the clue (e.g. "View Email" or "View Map")
+    to open it in a new tab.
+  • These pages contain extra clues and details that help you crack
+    the access code.
+  • Return to the main game tab when you're done reading.
+
+  On mobile, these pages open in the same tab — use the
+  "← Back to Mystery" link at the top to return.
+
+
+IMAGES — ENLARGE FOR A CLOSER LOOK
+------------------------------------
+Images attached to clues have an "⤢ Enlarge" button below them.
+
+  • Tap "⤢ Enlarge" to open the image full-screen.
+  • Tap outside the image (or the X) to close it.
+
+Use this whenever an image contains small text or details you need
+to read carefully.
+
+
+PUZZLES
+-------
+Some clues include a puzzle to solve. Tap "🧩 Solve Puzzle" on the
+clue to open it. Solving the puzzle reveals a reward or a piece of
+information you need to continue.
+
+On desktop, puzzles open in a new tab. On mobile, they open in the
+same tab — tap "← Back to Mystery" to return after solving.
+
+PUZZLE TYPES:
+
+  DRAG AND DROP (Put in Order)
+  ■ Items are listed in a scrambled order.
+  ■ Drag them into the correct sequence.
+  ■ On mobile, press and hold an item then drag it up or down.
+  ■ Tap Submit when you're happy with the order.
+
+  ELIMINATION (Cross Out)
+  ■ A list of options is shown. Cross out the ones that DON'T belong
+    based on the clues — leave the correct ones untouched.
+  ■ Tap an item to cross it out (it turns red with a strikethrough).
+  ■ Tap it again to bring it back.
+  ■ Cross out exactly the number of items the puzzle specifies, then
+    tap Submit.
+
+  MATCH (Connect Pairs)
+  ■ Two columns of items are shown. Connect each item on the left
+    to its matching item on the right.
+  ■ Tap an item on the left to select it (it highlights).
+  ■ Then tap its match on the right — a line connects them.
+  ■ To undo a pair, tap either connected item again.
+  ■ Match all pairs, then tap Submit.
+
+  WORD SEARCH
+  ■ Find all the listed words hidden in the letter grid.
+  ■ Drag across the letters to highlight a word (across, down,
+    or diagonally).
+  ■ Found words are crossed off the list and highlighted green.
+  ■ Once all words are found, read the leftover letters top to bottom
+    — they spell a hidden phrase that ends at ZZ.
+  ■ Type that hidden phrase into the box and tap Submit.
+
+  FILL IN THE BLANK
+  ■ A passage of text is shown with blanks to fill in.
+  ■ Easy mode: drag words from the word bank at the bottom up into
+    the correct blanks, or tap a blank then tap a word to place it.
+  ■ Hard mode: click a blank and type the answer directly.
+  ■ Tap Submit when all blanks are filled.
+
+  CIPHER / DECODE
+  ■ An encoded message is shown.
+  ■ Use the clue information to decode what it says.
+  ■ Type your decoded answer into the box and tap Submit.
+
+  PHONE KEYPAD
+  ■ A code is shown using letters (like on a phone keypad: A=2, B=2, C=2).
+  ■ Use the on-screen keypad to enter each number that matches the
+    letters in the code, then tap Submit.
+
+  ACCESS CODE (Straight Entry)
+  ■ Use the clues to work out a numeric or word code.
+  ■ Type it into the box and tap Submit.
+
+  HOTSPOT (Click the Image)
+  ■ An image is shown with hidden spots to find.
+  ■ Click (or tap) each hidden location on the image to place a marker.
+  ■ Green markers are close; red markers missed the spot.
+  ■ Click a placed marker to remove it.
+  ■ Find all spots, then tap Submit.
+
+
+EVIDENCE LOCKER
+---------------
+Tap 🗂️ Evidence in the top bar to open the Evidence Locker. This
+collects any bonus rewards or extra evidence you've unlocked by
+solving clues and puzzles throughout the mystery. Review it at any
+time for a summary of what you've gathered.
+
+
+HOW TO PLAY BUTTON
+------------------
+Tap ❓ How to Play in the top bar at any time to re-read these
+instructions.
+
+
+RESET
+-----
+Tap ↺ Reset in the top bar to wipe ALL progress and start the
+investigation from the very beginning.
+
+  ⚠ This cannot be undone. All unlocked clues and puzzle solutions
+    will be lost. Use it only if you want to start completely over.
+
+
+FINISHING THE MYSTERY
+---------------------
+Once you've unlocked all the clues, a final gate appears. Enter the
+solution code (or follow the final instructions) to reveal the answer
+and close the case.
+
+
+SAVING AND SHARING YOUR RESULT
+-------------------------------
+When the case is solved, a result card appears showing the mystery
+title, your completion time, and whether you used any hints.
+
+  • Tap "📷 Save/Share" to save or share the card image.
+
+  On iPhone/iPad:
+    The native share sheet opens. Choose "Save Image" to add it to
+    your Photos, or pick any app (Messages, Instagram, etc.) to share
+    it directly.
+
+  On Android:
+    The share sheet opens. Choose "Save to device" or pick an app
+    to share it.
+
+  On desktop:
+    The image downloads automatically as a JPEG file. A share link
+    is also copied to your clipboard if sharing isn't supported by
+    your browser.
+
+  • Long-press the card image on mobile to get the standard
+    "Save Image" option directly from your browser.
+
+The result card is yours to keep — share it with friends to show
+off your detective skills!

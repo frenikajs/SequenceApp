@@ -22,6 +22,40 @@ class SequenceModel
         return $this->db->fetch('SELECT * FROM sequences WHERE slug = ?', [$slug]);
     }
 
+    /** True if another sequence already uses this start code (case-insensitive). */
+    public function startCodeExists(string $code, int $excludeId = 0): bool
+    {
+        $code = trim($code);
+        if ($code === '') {
+            return false;
+        }
+        $row = $this->db->fetch(
+            'SELECT id FROM sequences WHERE LOWER(TRIM(start_code)) = LOWER(?) AND id != ?',
+            [$code, $excludeId]
+        );
+        return (bool)$row;
+    }
+
+    /**
+     * Find a playable sequence by its start code (case-insensitive), for the
+     * landing-page quick-access. Published + unexpired only unless $includeUnpublished.
+     */
+    public function findByStartCode(string $code, bool $includeUnpublished = false): array|false
+    {
+        $code = trim($code);
+        if ($code === '') {
+            return false;
+        }
+        $sql = 'SELECT * FROM sequences
+                WHERE LOWER(TRIM(start_code)) = LOWER(?)
+                  AND (expires_at IS NULL OR expires_at > NOW())';
+        if (!$includeUnpublished) {
+            $sql .= ' AND published = 1';
+        }
+        $sql .= ' ORDER BY published DESC, id DESC LIMIT 1';
+        return $this->db->fetch($sql, [$code]);
+    }
+
     public function getAll(int $limit = 10, int $offset = 0, string $search = ''): array
     {
         if ($search !== '') {
@@ -71,16 +105,17 @@ class SequenceModel
     {
         $this->db->execute(
             'INSERT INTO sequences
-             (title, slug, description, type, start_code, intro_access_code, finale_code,
+             (title, slug, description, type, gameboard_theme, start_code, intro_access_code, finale_code,
               finale_requires_code, introduction_content, intro_instruction, intro_hint_text,
               finale_content, finale_instruction, finale_hint_text, solution_content,
-              thank_you_content, published, expires_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              thank_you_content, accusation_json, published, expires_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $data['title'],
                 $data['slug'],
                 $data['description'] ?? null,
                 $data['type'] ?? 'sequential',
+                $data['gameboard_theme'] ?? 'candyland',
                 $data['start_code'],
                 $data['intro_access_code'] ?? null,
                 $data['finale_code'] ?? null,
@@ -93,6 +128,7 @@ class SequenceModel
                 $data['finale_hint_text'] ?? null,
                 $data['solution_content'] ?? null,
                 $data['thank_you_content'] ?? null,
+                $data['accusation_json'] ?? null,
                 (int)($data['published'] ?? 0),
                 $data['expires_at'] ?? null,
             ]
@@ -110,10 +146,10 @@ class SequenceModel
 
     public function update(int $id, array $data): bool
     {
-        $cols   = ['title','slug','description','type','start_code','intro_access_code','finale_code',
+        $cols   = ['title','slug','description','type','gameboard_theme','start_code','intro_access_code','finale_code',
                    'finale_requires_code','introduction_content','intro_instruction','intro_hint_text',
                    'finale_content','finale_instruction','finale_hint_text','solution_content','thank_you_content',
-                   'published','expires_at'];
+                   'survey_link','accusation_json','published','expires_at'];
         $fields = [];
         $params = [];
         foreach ($cols as $col) {
@@ -161,8 +197,15 @@ class SequenceModel
 
     public function togglePublish(int $id): bool
     {
+        // Stamp published_at the first time it goes live (kept on later re-publishes).
+        // NOTE: assign published_at BEFORE flipping `published` — MariaDB evaluates
+        // SET assignments left-to-right, so later references see the updated value.
         return $this->db->execute(
-            'UPDATE sequences SET published = NOT published WHERE id = ?',
+            'UPDATE sequences
+             SET published_at = CASE WHEN published = 0 AND published_at IS NULL
+                                     THEN NOW() ELSE published_at END,
+                 published = NOT published
+             WHERE id = ?',
             [$id]
         );
     }
@@ -204,7 +247,7 @@ class SequenceModel
 
         $this->db->execute(
             'INSERT INTO sequences
-             (title, slug, description, type, start_code, intro_access_code, finale_code, finale_requires_code,
+             (title, slug, description, type, gameboard_theme, start_code, intro_access_code, finale_code, finale_requires_code,
               introduction_content, intro_instruction, intro_file_path, intro_file_type, intro_original_filename,
               intro_file_size, intro_mime_type, intro_caption,
               intro_hint_text, intro_hint_file_path, intro_hint_file_type, intro_hint_original_filename,
@@ -215,8 +258,8 @@ class SequenceModel
               finale_hint_file_size, finale_hint_mime_type, finale_hint_caption,
               solution_content, solution_file_path, solution_file_type, solution_original_filename,
               solution_file_size, solution_mime_type, solution_caption,
-              thank_you_content, published, expires_at)
-             SELECT CONCAT(title, " (Copy)"), ?, description, type, start_code, intro_access_code, finale_code,
+              thank_you_content, survey_link, accusation_json, published, expires_at)
+             SELECT CONCAT(title, " (Copy)"), ?, description, type, gameboard_theme, start_code, intro_access_code, finale_code,
               finale_requires_code, introduction_content, intro_instruction, intro_file_path, intro_file_type,
               intro_original_filename, intro_file_size, intro_mime_type, intro_caption,
               intro_hint_text, intro_hint_file_path, intro_hint_file_type, intro_hint_original_filename,
@@ -227,7 +270,7 @@ class SequenceModel
               finale_hint_file_size, finale_hint_mime_type, finale_hint_caption,
               solution_content, solution_file_path, solution_file_type, solution_original_filename,
               solution_file_size, solution_mime_type, solution_caption,
-              thank_you_content, 0, expires_at
+              thank_you_content, survey_link, accusation_json, 0, expires_at
              FROM sequences WHERE id = ?',
             [$slug, $id]
         );
@@ -237,8 +280,8 @@ class SequenceModel
         $this->db->execute(
             'INSERT INTO sequence_themes
              (sequence_id, bg_color, text_color, button_color, btn_text_color, accent_color,
-              font_family, container_width, bg_image, custom_css)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              font_family, title_font, title_color, container_width, bg_image, custom_css)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $newId,
                 $theme['bg_color']        ?? '#0f0f1a',
@@ -247,6 +290,8 @@ class SequenceModel
                 $theme['btn_text_color']  ?? '#ffffff',
                 $theme['accent_color']    ?? '#ff6b6b',
                 $theme['font_family']     ?? 'Inter, sans-serif',
+                $theme['title_font']      ?? null,
+                $theme['title_color']     ?? null,
                 $theme['container_width'] ?? '800px',
                 $theme['bg_image']        ?? null,
                 $theme['custom_css']      ?? null,
@@ -268,6 +313,22 @@ class SequenceModel
             [$newId, $id]
         );
 
+        // Duplicate the Interactive suspect-clue matrix. Clues are copied by
+        // sort_order, so pair old↔new clue ids in that same order to remap.
+        $oldClues = $this->db->fetchAll('SELECT id FROM clues WHERE sequence_id = ? ORDER BY sort_order, id', [$id]);
+        $newClues = $this->db->fetchAll('SELECT id FROM clues WHERE sequence_id = ? ORDER BY sort_order, id', [$newId]);
+        foreach ($oldClues as $i => $oc) {
+            $newClueId = $newClues[$i]['id'] ?? null;
+            if ($newClueId === null) { continue; }
+            $this->db->execute(
+                'INSERT INTO suspect_clues
+                  (sequence_id, clue_id, suspect_index, body, file_path, file_type, original_filename, file_size, mime_type)
+                 SELECT ?, ?, suspect_index, body, file_path, file_type, original_filename, file_size, mime_type
+                 FROM suspect_clues WHERE clue_id = ?',
+                [$newId, $newClueId, $oc['id']]
+            );
+        }
+
         return $newId;
     }
 
@@ -288,6 +349,8 @@ class SequenceModel
                 'btn_text_color'  => '#ffffff',
                 'accent_color'    => '#ff6b6b',
                 'font_family'     => 'Inter, sans-serif',
+                'title_font'      => null,
+                'title_color'     => null,
                 'container_width' => '800px',
                 'bg_image'        => null,
                 'custom_css'      => null,
@@ -299,7 +362,7 @@ class SequenceModel
     public function saveTheme(int $sequenceId, array $data): bool
     {
         $cols   = ['bg_color','text_color','button_color','btn_text_color','accent_color',
-                   'font_family','container_width','bg_image','custom_css'];
+                   'font_family','title_font','title_color','container_width','bg_image','custom_css'];
         $fields = [];
         $params = [];
         foreach ($cols as $col) {
@@ -341,6 +404,15 @@ class SequenceModel
         .btn-primary:hover { filter: brightness(1.15); }
         .accent { color: var(--accent); }
         CSS;
+
+        // Optional title override (font and/or color). Both are nullable — when
+        // unset the title inherits the body font and the default text colour.
+        $titleRules = [];
+        if (!empty($theme['title_font']))  { $titleRules[] = 'font-family: ' . $theme['title_font'] . ';'; }
+        if (!empty($theme['title_color'])) { $titleRules[] = 'color: ' . $theme['title_color'] . ';'; }
+        if ($titleRules) {
+            $css .= "\n.seq-title { " . implode(' ', $titleRules) . " }";
+        }
 
         if (!empty($theme['custom_css'])) {
             $css .= "\n" . $theme['custom_css'];

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="210" viewBox="0 0 480 210">
+  <!-- Repeatable candy forest: lollipop trees, gumdrops, candy canes and a
+       frosting-topped candy house on a creamy ground. -->
+  <!-- creamy ground -->
+  <rect x="0" y="196" width="480" height="14" fill="#fff0f6"/>
+  <rect x="0" y="196" width="480" height="4" fill="#ffe1ee"/>
+
+  <!-- lollipop tree (left) -->
+  <rect x="56" y="104" width="7" height="98" rx="3" fill="#ffffff"/>
+  <circle cx="59" cy="96" r="30" fill="#ff6b9d"/>
+  <circle cx="59" cy="96" r="21" fill="#ffd1e0"/>
+  <circle cx="59" cy="96" r="12" fill="#ff6b9d"/>
+  <circle cx="59" cy="96" r="5"  fill="#ffffff"/>
+
+  <!-- candy cane -->
+  <path d="M120 202 V150 a18 18 0 0 1 36 0" stroke="#e8425e" stroke-width="13" fill="none" stroke-linecap="round"/>
+  <path d="M120 202 V150 a18 18 0 0 1 36 0" stroke="#ffffff" stroke-width="13" fill="none" stroke-linecap="round" stroke-dasharray="9 11"/>
+
+  <!-- gumdrops -->
+  <path d="M178 202 a24 30 0 0 1 48 0 Z" fill="#7ed957"/>
+  <circle cx="190" cy="186" r="2" fill="#fff" opacity=".7"/><circle cx="206" cy="178" r="2" fill="#fff" opacity=".7"/><circle cx="214" cy="190" r="2" fill="#fff" opacity=".7"/>
+  <path d="M246 202 a18 24 0 0 1 36 0 Z" fill="#ffd23f"/>
+  <circle cx="256" cy="190" r="2" fill="#fff" opacity=".7"/><circle cx="270" cy="184" r="2" fill="#fff" opacity=".7"/>
+
+  <!-- candy house (center-right) -->
+  <rect x="300" y="120" width="108" height="82" fill="#ffd1e6"/>
+  <rect x="300" y="120" width="108" height="82" fill="url(#stripe)" opacity=".25"/>
+  <polygon points="292,124 354,82 416,124" fill="#ffffff"/>
+  <!-- frosting drips along the eave -->
+  <g fill="#ffffff">
+    <circle cx="300" cy="124" r="7"/><circle cx="316" cy="126" r="7"/><circle cx="332" cy="124" r="7"/>
+    <circle cx="348" cy="126" r="7"/><circle cx="364" cy="124" r="7"/><circle cx="380" cy="126" r="7"/>
+    <circle cx="396" cy="124" r="7"/><circle cx="408" cy="124" r="6"/>
+  </g>
+  <rect x="316" y="138" width="22" height="22" rx="3" fill="#ffe24d"/>
+  <rect x="372" y="138" width="22" height="22" rx="3" fill="#ffe24d"/>
+  <path d="M344 202 v-30 a11 11 0 0 1 22 0 v30 Z" fill="#c084fc"/>
+  <circle cx="324" cy="186" r="5" fill="#5bc0ff"/><circle cx="386" cy="186" r="5" fill="#ff6b9d"/>
+
+  <!-- lollipop tree (right) -->
+  <rect x="438" y="110" width="7" height="92" rx="3" fill="#ffffff"/>
+  <circle cx="441" cy="102" r="27" fill="#5bc0ff"/>
+  <circle cx="441" cy="102" r="19" fill="#d6f0ff"/>
+  <circle cx="441" cy="102" r="11" fill="#5bc0ff"/>
+  <circle cx="441" cy="102" r="4"  fill="#ffffff"/>
+
+  <defs>
+    <pattern id="stripe" width="20" height="20" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="20" fill="#ffffff"/>
+    </pattern>
+  </defs>
+</svg>

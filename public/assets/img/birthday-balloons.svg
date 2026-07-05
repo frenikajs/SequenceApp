@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="420" viewBox="0 0 320 420">
+  <!-- Repeatable column of party balloons with strings; scrolls upward to read
+       as balloons floating up the page. -->
+  <g>
+    <!-- balloon 1 (magenta) -->
+    <path d="M50 250 C50 256 46 258 50 268" stroke="#d9a0c0" stroke-width="2" fill="none"/>
+    <ellipse cx="50" cy="218" rx="30" ry="36" fill="#e91e63"/>
+    <ellipse cx="40" cy="206" rx="8" ry="11" fill="#ff7aa8" opacity="0.6"/>
+    <polygon points="44,250 56,250 50,260" fill="#e91e63"/>
+
+    <!-- balloon 2 (teal) -->
+    <path d="M150 120 C150 126 154 130 150 142" stroke="#a0d6dd" stroke-width="2" fill="none"/>
+    <ellipse cx="150" cy="86" rx="32" ry="38" fill="#00bcd4"/>
+    <ellipse cx="139" cy="73" rx="9" ry="12" fill="#7eecfb" opacity="0.6"/>
+    <polygon points="144,121 156,121 150,132" fill="#00bcd4"/>
+
+    <!-- balloon 3 (gold) -->
+    <path d="M240 330 C240 336 236 340 240 352" stroke="#e9d49a" stroke-width="2" fill="none"/>
+    <ellipse cx="240" cy="298" rx="29" ry="35" fill="#ffc107"/>
+    <ellipse cx="230" cy="286" rx="8" ry="11" fill="#ffe08a" opacity="0.6"/>
+    <polygon points="234,331 246,331 240,341" fill="#ffc107"/>
+
+    <!-- balloon 4 (purple) -->
+    <path d="M110 392 C110 398 114 402 110 414" stroke="#cdb0d9" stroke-width="2" fill="none"/>
+    <ellipse cx="110" cy="360" rx="30" ry="36" fill="#9c27b0"/>
+    <ellipse cx="100" cy="348" rx="8" ry="11" fill="#d77ae8" opacity="0.55"/>
+    <polygon points="104,393 116,393 110,403" fill="#9c27b0"/>
+  </g>
+</svg>

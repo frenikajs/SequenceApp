@@ -254,10 +254,19 @@ unset($_t);
 $gbRowSize = 6;
 $gbRows    = array_chunk($tiles, $gbRowSize);
 ?>
+<?php
+// Visual theme — set in the admin Game Board Theme picker. Maps to a
+// .gb-theme-* class that restyles the board, tiles, start/finish and modal.
+$gbThemes = ['candyland', 'winter', 'spooky', 'pool', 'birthday'];
+$gbTheme  = in_array($sequence['gameboard_theme'] ?? '', $gbThemes, true)
+          ? $sequence['gameboard_theme'] : 'candyland';
+?>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap">
 
-<div class="gb-board" id="gb-board">
-  <?php foreach ($gbRows as $rIdx => $rowTiles):
+<div class="gb-board gb-theme-<?= $gbTheme ?>" id="gb-board" role="group" aria-label="Game board. Open each tile in order to unlock the next.">
+  <?php
+  $gbStateWord = ['locked' => 'locked', 'current' => 'ready to open', 'done' => 'completed'];
+  foreach ($gbRows as $rIdx => $rowTiles):
     $dirCls = ($rIdx % 2 === 0) ? 'gb-row-ltr' : 'gb-row-rtl';
   ?>
   <div class="gb-row <?= $dirCls ?>">
@@ -266,11 +275,13 @@ $gbRows    = array_chunk($tiles, $gbRowSize);
       $state = $t['state'];
       $idx   = $t['idx'];
       $cls   = 'gb-tile gb-' . $kind . ' gb-' . $state . ' ' . $t['colorClass'];
+      $stateLabel = $gbStateWord[$state] ?? $state;
     ?>
     <button type="button" class="<?= $cls ?>" data-tile="<?= $idx ?>"
-            aria-label="<?= htmlspecialchars($t['label'] . ' — ' . $state, ENT_QUOTES, 'UTF-8') ?>">
+            aria-label="<?= htmlspecialchars($t['label'] . ', ' . $stateLabel, ENT_QUOTES, 'UTF-8') ?>"
+            <?= $state === 'locked' ? 'aria-disabled="true"' : '' ?>>
       <?php if ($kind === 'clue'): ?>
-      <span class="gb-tile-num"><?= $idx ?></span>
+      <span class="gb-tile-num" aria-hidden="true"><?= $idx ?></span>
       <?php endif; ?>
       <?php if ($state === 'locked'): ?>
       <span class="gb-tile-lock" aria-hidden="true">&#128274;</span>
@@ -291,7 +302,7 @@ $gbRows    = array_chunk($tiles, $gbRowSize);
 </div>
 
 <!-- Modal shell -->
-<div class="gb-modal-overlay hidden" id="gb-modal" role="dialog" aria-modal="true" aria-labelledby="gb-modal-title">
+<div class="gb-modal-overlay hidden gb-theme-<?= $gbTheme ?>" id="gb-modal" role="dialog" aria-modal="true" aria-labelledby="gb-modal-title">
   <div class="gb-modal-box">
     <button type="button" class="gb-modal-close" id="gb-modal-close" aria-label="Close">&times;</button>
     <div class="gb-modal-body" id="gb-modal-body"></div>
@@ -299,10 +310,21 @@ $gbRows    = array_chunk($tiles, $gbRowSize);
 </div>
 
 <?php if ($flashMsg === 'solution_unlocked'): ?>
+<?php
+// Per-theme firework hue palettes (saturation/lightness come from the
+// .gb-theme-* CSS so each theme can read frosty/pastel/neon differently).
+$gbFwHues = [
+    'candyland' => [330, 45, 200, 150, 275, 25],   // rainbow candy
+    'winter'    => [200, 210, 190, 220, 205, 230],  // icy blues
+    'spooky'    => [25, 95, 280, 110, 35, 265],     // pumpkin · slime · witch
+    'pool'      => [190, 16, 45, 205, 330, 160],     // aqua · coral · sun
+    'birthday'  => [330, 185, 45, 280, 95, 15],      // confetti
+][$gbTheme] ?? [330, 45, 200, 150, 275, 25];
+?>
 <!-- Fireworks: triggered on first render after solving -->
-<div class="gb-fireworks" id="gb-fireworks" aria-hidden="true">
+<div class="gb-fireworks gb-theme-<?= $gbTheme ?>" id="gb-fireworks" aria-hidden="true">
   <?php for ($f = 0; $f < 6; $f++): ?>
-  <span class="gb-firework" style="--gb-fw-x:<?= 8 + ($f * 14) ?>%;--gb-fw-y:<?= 18 + ($f % 3) * 22 ?>%;--gb-fw-delay:<?= $f * 0.35 ?>s;--gb-fw-hue:<?= ($f * 57) % 360 ?>"></span>
+  <span class="gb-firework" style="--gb-fw-x:<?= 8 + ($f * 14) ?>%;--gb-fw-y:<?= 18 + ($f % 3) * 22 ?>%;--gb-fw-delay:<?= $f * 0.35 ?>s;--gb-fw-hue:<?= $gbFwHues[$f % count($gbFwHues)] ?>"></span>
   <?php endfor; ?>
 </div>
 <?php endif; ?>
@@ -315,19 +337,42 @@ $gbRows    = array_chunk($tiles, $gbRowSize);
   var closer = document.getElementById('gb-modal-close');
   if (!board || !modal || !body) return;
 
+  var modalReturnFocus = null;
+
   function open(idx) {
     var tpl = document.getElementById('gb-panel-' + idx);
     if (!tpl) return;
+    modalReturnFocus = document.activeElement;
     body.innerHTML = '';
     body.appendChild(tpl.content.cloneNode(true));
+    // Wire the dialog's accessible name to the panel's heading.
+    var heading = body.querySelector('.gb-modal-title');
+    if (heading) {
+      heading.id = 'gb-modal-title';
+      modal.setAttribute('aria-labelledby', 'gb-modal-title');
+    } else {
+      modal.removeAttribute('aria-labelledby');
+      modal.setAttribute('aria-label', 'Tile');
+    }
     modal.classList.remove('hidden');
     document.documentElement.classList.add('gb-modal-open');
+    // Focus the code field if present, else the close button.
     var firstInput = body.querySelector('input[name="code"]');
-    if (firstInput) setTimeout(function () { firstInput.focus(); }, 30);
+    var target = firstInput || closer;
+    if (target) setTimeout(function () { target.focus(); }, 30);
+    // Announce a reveal (a "done"/reward tile has no code form).
+    if (!firstInput && typeof announce === 'function' && heading) {
+      announce(heading.textContent + ' revealed.');
+    }
   }
   function close() {
+    if (modal.classList.contains('hidden')) return;
     modal.classList.add('hidden');
     document.documentElement.classList.remove('gb-modal-open');
+    if (modalReturnFocus && typeof modalReturnFocus.focus === 'function') {
+      modalReturnFocus.focus();
+    }
+    modalReturnFocus = null;
   }
 
   board.addEventListener('click', function (e) {
@@ -337,6 +382,9 @@ $gbRows    = array_chunk($tiles, $gbRowSize);
       btn.classList.remove('gb-shake');
       void btn.offsetWidth;
       btn.classList.add('gb-shake');
+      if (typeof announce === 'function') {
+        announce('That tile is locked. Open the earlier tiles first.', true);
+      }
       return;
     }
     open(btn.getAttribute('data-tile'));
@@ -346,7 +394,9 @@ $gbRows    = array_chunk($tiles, $gbRowSize);
     if (e.target === modal) close();
   });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
+    if (modal.classList.contains('hidden')) return;
+    if (e.key === 'Escape') close();
+    else if (typeof trapFocus === 'function') trapFocus(modal, e);
   });
 
   // Responsive row chunking: 6 tiles per row on wide screens, 3 on narrow

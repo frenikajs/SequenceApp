@@ -29,19 +29,20 @@ class CluePageModel
     {
         $this->db->execute(
             'INSERT INTO clue_pages
-             (clue_id, slug, site_type, site_name, page_title, author, publish_date, content, nav_json, footer_text)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+             (clue_id, slug, site_type, site_name, page_title, author, publish_date, content, reward_content, nav_json, footer_text)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $data['clue_id'] ?? null,
                 $data['slug'],
                 $data['site_type'],
                 $data['site_name'],
                 $data['page_title'],
-                $data['author']       ?? null,
-                $data['publish_date'] ?? null,
-                $data['content']      ?? null,
-                $data['nav_json']     ?? null,
-                $data['footer_text']  ?? null,
+                $data['author']         ?? null,
+                $data['publish_date']   ?? null,
+                $data['content']        ?? null,
+                $data['reward_content'] ?? null,
+                $data['nav_json']       ?? null,
+                $data['footer_text']    ?? null,
             ]
         );
         return (int)$this->db->lastInsertId();
@@ -52,18 +53,19 @@ class CluePageModel
         $this->db->execute(
             'UPDATE clue_pages
              SET slug=?, site_type=?, site_name=?, page_title=?, author=?,
-                 publish_date=?, content=?, nav_json=?, footer_text=?
+                 publish_date=?, content=?, reward_content=?, nav_json=?, footer_text=?
              WHERE id = ?',
             [
                 $data['slug'],
                 $data['site_type'],
                 $data['site_name'],
                 $data['page_title'],
-                $data['author']       ?? null,
-                $data['publish_date'] ?? null,
-                $data['content']      ?? null,
-                $data['nav_json']     ?? null,
-                $data['footer_text']  ?? null,
+                $data['author']         ?? null,
+                $data['publish_date']   ?? null,
+                $data['content']        ?? null,
+                $data['reward_content'] ?? null,
+                $data['nav_json']       ?? null,
+                $data['footer_text']    ?? null,
                 $id,
             ]
         );

@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+// When running under PHP's built-in dev server (`php -S`), let real files on
+// disk (CSS, JS, images, uploads) be served directly instead of being routed
+// through this front controller. No effect under Apache / IONOS.
+if (PHP_SAPI === 'cli-server') {
+    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    if ($uri !== '/' && is_file(__DIR__ . $uri)) {
+        return false;
+    }
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
 require_once dirname(__DIR__) . '/app/config/config.php';
@@ -15,6 +25,9 @@ require_once APP_ROOT . '/models/CluePageModel.php';
 require_once APP_ROOT . '/models/PuzzlePageModel.php';
 require_once APP_ROOT . '/models/ProgressModel.php';
 require_once APP_ROOT . '/models/SettingsModel.php';
+require_once APP_ROOT . '/models/GroupModel.php';
+require_once APP_ROOT . '/models/GroupMemberModel.php';
+require_once APP_ROOT . '/models/SuspectClueModel.php';
 require_once APP_ROOT . '/controllers/AuthController.php';
 require_once APP_ROOT . '/controllers/AdminController.php';
 require_once APP_ROOT . '/controllers/CluePageController.php';
@@ -71,6 +84,12 @@ if ($seg0 === 'how-to-play' && $seg1 === '') {
     exit;
 }
 
+// ── Landing page quick-access: enter a start code to jump straight into a game ──
+if ($seg0 === 'enter' && $seg1 === '') {
+    ($method === 'POST') ? (new SequenceController())->enterCode() : redirect('/');
+    exit;
+}
+
 // ── Public sequence pages ─────────────────────────────────────────────────────
 if ($seg0 === 's' && $seg1 !== '') {
     $slug = $seg1;
@@ -78,10 +97,35 @@ if ($seg0 === 's' && $seg1 !== '') {
 
     if ($method === 'POST') {
         $action = $seg2;
-        match ($action) {
-            'reset' => $ctrl->resetProgress($slug),
-            default => $ctrl->submitCode($slug),
-        };
+        if ($action === 'group') {
+            match ($seg3) {
+                'create' => $ctrl->groupCreate($slug),
+                'join'   => $ctrl->groupJoin($slug),
+                'start'  => $ctrl->groupStart($slug),
+                'hint'   => $ctrl->groupHint($slug),
+                default  => notFound(),
+            };
+        } elseif ($action === 'mode' && $seg3 === 'solo') {
+            $ctrl->chooseSolo($slug);
+        } else {
+            match ($action) {
+                'reset'        => $ctrl->resetProgress($slug),
+                'accuse'       => $ctrl->accuse($slug),
+                'suspect'      => $ctrl->pickSuspect($slug),
+                'crime-scene'  => $ctrl->enterCrimeScene($slug),
+                'vote'         => $ctrl->castVote($slug),
+                'force-vote'   => $ctrl->forceVote($slug),
+                'accuse-again' => $ctrl->accuseAgain($slug),
+                'reveal'       => $ctrl->revealMystery($slug),
+                default        => $ctrl->submitCode($slug),
+            };
+        }
+    } elseif ($seg2 === 'group' && $seg3 === 'status') {
+        $ctrl->groupStatus($slug);
+    } elseif ($seg2 === 'select' && $seg3 === 'status') {
+        $ctrl->selectStatus($slug);
+    } elseif ($seg2 === 'vote' && $seg3 === 'status') {
+        $ctrl->voteStatus($slug);
     } else {
         $ctrl->show($slug);
     }
@@ -147,6 +191,8 @@ if ($seg0 === 'admin') {
             $puzzleCtrl->deletePage($clueId);
         } elseif ($method === 'POST') {
             $puzzleCtrl->savePage($clueId);
+        } elseif ($seg4 === 'print') {
+            $puzzleCtrl->printPuzzle($clueId);
         } else {
             $puzzleCtrl->editPage($clueId);
         }
@@ -168,6 +214,12 @@ if ($seg0 === 'admin') {
     if ($adminSeg1 === 'guide' && $adminSeg2 === '') {
         $guideCtrl = new GuideController();
         ($method === 'POST') ? $guideCtrl->save() : $guideCtrl->edit();
+        exit;
+    }
+
+    // Diagnostic: /admin/diagnostic  and  /admin/diagnostic/check (SQL schema check)
+    if ($adminSeg1 === 'diagnostic') {
+        ($adminSeg2 === 'check') ? $adminCtrl->checkSql() : $adminCtrl->diagnostic();
         exit;
     }
 
@@ -195,6 +247,16 @@ if ($seg0 === 'admin') {
                 ['POST', 'reset-stats'] => $adminCtrl->resetStats($seqId),
                 ['GET',  'clues']     => $adminCtrl->manageClues($seqId),
                 ['POST', 'clues']     => $adminCtrl->addClue($seqId),
+                ['GET',  'print']     => $adminCtrl->printKit($seqId),
+                ['GET',  'answer-guide'] => $adminCtrl->answerGuide($seqId),
+                ['GET',  'promo']     => $adminCtrl->promoPage($seqId),
+                ['GET',  'overview']  => $adminCtrl->sequenceOverview($seqId),
+                ['GET',  'whodunnit'] => $adminCtrl->whodunnitSetup($seqId),
+                ['POST', 'whodunnit'] => $adminCtrl->saveWhodunnit($seqId),
+                ['GET',  'interactive']   => $adminCtrl->interactiveSetup($seqId),
+                ['POST', 'interactive']   => $adminCtrl->saveInteractive($seqId),
+                ['GET',  'suspect-clues'] => $adminCtrl->suspectCluesEditor($seqId),
+                ['POST', 'suspect-clues'] => $adminCtrl->saveSuspectClues($seqId),
                 default               => notFound(),
             };
             exit;
@@ -210,9 +272,10 @@ if ($seg0 === 'admin') {
     notFound();
 }
 
-// ── Root redirect ─────────────────────────────────────────────────────────────
+// ── Root: public crime-file landing page (quick-access by code) ────────────────
 if ($path === '/' || $path === '') {
-    redirect('/admin');
+    (new SequenceController())->landing();
+    exit;
 }
 
 notFound();

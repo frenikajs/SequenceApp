@@ -24,6 +24,19 @@ $pAClues = array_fill(0, 10, '');
 $pEItems  = array_fill(0, 6, '');
 $pEMark   = array_fill(0, 6, false);
 $pEClues  = array_fill(0, 10, '');
+$pEHeading = '';
+$pWsWords = array_fill(0, 8, '');
+$pWsPhrase = '';
+$pMLeft  = array_fill(0, 10, '');
+$pMRight = array_fill(0, 10, '');
+$pMClues = array_fill(0, 10, '');
+$pHsImage  = '';
+$pHsSpots  = '[]';
+$pHsRadius = 8;
+$pHsClues  = array_fill(0, 10, '');
+$pFbText       = '';
+$pFbDifficulty = 'easy';
+$pFbClues      = array_fill(0, 10, '');
 if (!empty($inp)) {
     for ($i = 0; $i < 6; $i++)  { $pItems[$i] = $inp['item' . ($i + 1)] ?? ''; }
     for ($i = 0; $i < 10; $i++) { $pClues[$i] = $inp['oclue' . ($i + 1)] ?? ''; }
@@ -33,8 +46,20 @@ if (!empty($inp)) {
     $pAccess = $inp['access_code'] ?? '';
     for ($i = 0; $i < 10; $i++) { $pAClues[$i] = $inp['aclue' . ($i + 1)] ?? ''; }
     $eMarkIn = $inp['elim_mark'] ?? [];
-    for ($i = 0; $i < 6; $i++)  { $pEItems[$i] = $inp['item' . ($i + 1)] ?? ''; $pEMark[$i] = !empty($eMarkIn[$i + 1]); }
+    for ($i = 0; $i < 6; $i++)  { $pEItems[$i] = $inp['eitem' . ($i + 1)] ?? ''; $pEMark[$i] = !empty($eMarkIn[$i + 1]); }
     for ($i = 0; $i < 10; $i++) { $pEClues[$i] = $inp['eclue' . ($i + 1)] ?? ''; }
+    $pEHeading = $inp['elim_heading'] ?? '';
+    for ($i = 0; $i < 8; $i++)  { $pWsWords[$i] = $inp['wsword' . ($i + 1)] ?? ''; }
+    $pWsPhrase = $inp['ws_phrase'] ?? '';
+    for ($i = 0; $i < 10; $i++) { $pMLeft[$i] = $inp['mleft' . ($i + 1)] ?? ''; $pMRight[$i] = $inp['mright' . ($i + 1)] ?? ''; }
+    for ($i = 0; $i < 10; $i++) { $pMClues[$i] = $inp['mclue' . ($i + 1)] ?? ''; }
+    $pHsImage  = $inp['_hotspot_uploaded'] ?? '';
+    $pHsSpots  = $inp['hotspot_spots'] ?? '[]';
+    $pHsRadius = $inp['hotspot_radius'] ?? 8;
+    for ($i = 0; $i < 10; $i++) { $pHsClues[$i] = $inp['hsclue' . ($i + 1)] ?? ''; }
+    $pFbText       = (string)($inp['fb_text'] ?? '');
+    $pFbDifficulty = (($inp['fb_difficulty'] ?? '') === 'hard') ? 'hard' : 'easy';
+    for ($i = 0; $i < 10; $i++) { $pFbClues[$i] = $inp['fbclue' . ($i + 1)] ?? ''; }
 } elseif ($puzzle) {
     $d = json_decode($puzzle['data_json'] ?? '{}', true) ?: [];
     foreach (($d['items'] ?? []) as $i => $v) { if ($i < 6)  { $pItems[$i] = (string)$v; } }
@@ -55,6 +80,31 @@ if (!empty($inp)) {
             }
         }
         foreach (($d['clues'] ?? []) as $i => $v) { if ($i < 10) { $pEClues[$i] = (string)$v; } }
+        $pEHeading = (string)($d['heading'] ?? '');
+    }
+    if (($puzzle['puzzle_type'] ?? '') === 'wordsearch') {
+        foreach (($d['words'] ?? []) as $i => $v) { if ($i < 8) { $pWsWords[$i] = (string)$v; } }
+        $pWsPhrase = (string)($d['phrase'] ?? '');
+    }
+    if (($puzzle['puzzle_type'] ?? '') === 'match') {
+        foreach (($d['pairs'] ?? []) as $i => $p) {
+            if ($i < 10) {
+                $pMLeft[$i]  = (string)($p['l'] ?? '');
+                $pMRight[$i] = (string)($p['r'] ?? '');
+            }
+        }
+        foreach (($d['clues'] ?? []) as $i => $v) { if ($i < 10) { $pMClues[$i] = (string)$v; } }
+    }
+    if (($puzzle['puzzle_type'] ?? '') === 'hotspot') {
+        $pHsImage  = (string)($d['image'] ?? '');
+        $pHsSpots  = json_encode(array_values($d['spots'] ?? []));
+        $pHsRadius = (float)($d['radius'] ?? 8);
+        foreach (($d['clues'] ?? []) as $i => $v) { if ($i < 10) { $pHsClues[$i] = (string)$v; } }
+    }
+    if (($puzzle['puzzle_type'] ?? '') === 'fillblank') {
+        $pFbText       = (string)($d['text'] ?? '');
+        $pFbDifficulty = (($d['difficulty'] ?? '') === 'hard') ? 'hard' : 'easy';
+        foreach (($d['clues'] ?? []) as $i => $v) { if ($i < 10) { $pFbClues[$i] = (string)$v; } }
     }
 }
 if ($pShift < 1 || $pShift > 25) { $pShift = 3; }
@@ -83,10 +133,16 @@ if ($pShift < 1 || $pShift > 25) { $pShift = 3; }
       /z/<?= e($puzzle['slug']) ?> &#8599;
     </a>
   </div>
+  <div class="analytic-item">
+    <a href="<?= url('admin/clues/' . (int)$clue['id'] . '/puzzle/print') ?>" target="_blank" class="btn btn-ghost btn-sm"
+       title="Printer-friendly player sheet (no answers)">
+      🖨 Print / Save Sheet ↗
+    </a>
+  </div>
 </div>
 <?php endif; ?>
 
-<form method="POST" action="<?= url('admin/clues/' . $clueId . '/puzzle') ?>" id="puzzle-form">
+<form method="POST" action="<?= url('admin/clues/' . $clueId . '/puzzle') ?>" id="puzzle-form" enctype="multipart/form-data" data-autosave="puzzle-<?= $clueId ?>">
   <?= csrf_field() ?>
 
   <div class="card">
@@ -101,14 +157,18 @@ if ($pShift < 1 || $pShift > 25) { $pShift = 3; }
             <option value="phone"  <?= $pType === 'phone'  ? 'selected' : '' ?>>Phone Keypad</option>
             <option value="access" <?= $pType === 'access' ? 'selected' : '' ?>>Access Code</option>
             <option value="elim"   <?= $pType === 'elim'   ? 'selected' : '' ?>>Elimination</option>
+            <option value="wordsearch" <?= $pType === 'wordsearch' ? 'selected' : '' ?>>Word Search</option>
+            <option value="match"  <?= $pType === 'match'  ? 'selected' : '' ?>>Matching / Connections</option>
+            <option value="hotspot" <?= $pType === 'hotspot' ? 'selected' : '' ?>>Hotspot (Mark the Spot)</option>
+            <option value="fillblank" <?= $pType === 'fillblank' ? 'selected' : '' ?>>Fill in the Blank</option>
           </select>
         </div>
         <div class="form-group flex-1">
-          <label>URL Slug <span class="req">*</span></label>
+          <label>URL Slug</label>
           <div class="input-prefix">
             <span class="prefix-text">/z/</span>
-            <input type="text" name="slug" id="slug-field" required
-                   value="<?= e($pSlug) ?>" placeholder="order-the-events">
+            <input type="text" name="slug" id="slug-field"
+                   value="<?= e($pSlug) ?>" placeholder="leave blank to use the title">
           </div>
         </div>
       </div>
@@ -179,15 +239,122 @@ if ($pShift < 1 || $pShift > 25) { $pShift = 3; }
   </div>
   </div>
 
+  <div id="grp-hotspot">
+  <div class="card mt-4">
+    <div class="card-header"><h2>Hotspot Image</h2></div>
+    <div class="card-body">
+      <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Upload an image, then click on it to place up to 5 target spots. Drag the slider to set how close a player&rsquo;s click must be. Use the <strong>Prompt</strong> field above to tell players what to look for.</small>
+      <div class="form-group">
+        <label>Puzzle Image <span class="req">*</span></label>
+        <input type="file" name="hotspot_image" id="hs-file" class="inv-field"
+               accept=".png,.jpg,.jpeg,.webp,.gif">
+        <?php if ($pHsImage !== ''): ?>
+        <small class="inv-hint">Current image loaded below. Upload a new file to replace it.</small>
+        <?php endif; ?>
+      </div>
+      <div class="form-group" style="max-width:320px">
+        <label>Click tolerance: <span id="hs-radius-val"><?= (float)$pHsRadius ?>%</span></label>
+        <input type="range" name="hotspot_radius" id="hs-radius" min="3" max="20" step="1"
+               value="<?= (float)$pHsRadius ?>" style="width:100%">
+      </div>
+      <div class="hs-edit-wrap" id="hs-wrap">
+        <div class="hs-edit" id="hs-edit">
+          <img id="hs-img" class="hs-edit-img" alt=""
+               <?php if ($pHsImage !== ''): ?>src="<?= e(url('uploads/' . $pHsImage)) ?>"<?php else: ?>style="display:none"<?php endif; ?>>
+          <div class="hs-edit-layer" id="hs-layer"></div>
+        </div>
+        <p class="inv-hint" style="margin-top:.5rem">Spots placed: <span id="hs-count">0</span>/5 &mdash; click the image to add a spot, click a marker to remove it.</p>
+        <button type="button" class="btn btn-ghost btn-sm" id="hs-clear">Clear spots</button>
+      </div>
+      <input type="hidden" name="hotspot_spots" id="hs-spots" value="<?= e($pHsSpots) ?>">
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header"><h2>Hotspot Clues</h2></div>
+    <div class="card-body">
+      <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Up to 10 clue strings shown beside the image to help players figure out where the spots are.</small>
+      <?php for ($i = 0; $i < 10; $i++): ?>
+      <div class="map-marker-row">
+        <span class="map-marker-num"><?= $i + 1 ?></span>
+        <input type="text" name="hsclue<?= $i + 1 ?>" class="inv-field"
+               placeholder="Hotspot clue <?= $i + 1 ?>" value="<?= e($pHsClues[$i]) ?>">
+      </div>
+      <?php endfor; ?>
+    </div>
+  </div>
+  </div>
+
+  <div id="grp-match">
+  <div class="card mt-4">
+    <div class="card-header"><h2>Matching Pairs</h2></div>
+    <div class="card-body">
+      <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Enter up to 10 pairs. The player sees the left items in order and the right items shuffled, and must connect each left to its correct right. Both sides of a pair are required.</small>
+      <?php for ($i = 0; $i < 10; $i++): ?>
+      <div class="match-pair-row">
+        <span class="map-marker-num"><?= $i + 1 ?></span>
+        <input type="text" name="mleft<?= $i + 1 ?>" class="inv-field"
+               placeholder="Left <?= $i + 1 ?> (e.g. Suspect)" value="<?= e($pMLeft[$i]) ?>">
+        <span class="match-pair-link" aria-hidden="true">&harr;</span>
+        <input type="text" name="mright<?= $i + 1 ?>" class="inv-field"
+               placeholder="Right <?= $i + 1 ?> (e.g. Alibi)" value="<?= e($pMRight[$i]) ?>">
+      </div>
+      <?php endfor; ?>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header"><h2>Matching Clues</h2></div>
+    <div class="card-body">
+      <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Up to 10 clue strings shown beside the columns to help players deduce the connections.</small>
+      <?php for ($i = 0; $i < 10; $i++): ?>
+      <div class="map-marker-row">
+        <span class="map-marker-num"><?= $i + 1 ?></span>
+        <input type="text" name="mclue<?= $i + 1 ?>" class="inv-field"
+               placeholder="Matching clue <?= $i + 1 ?>" value="<?= e($pMClues[$i]) ?>">
+      </div>
+      <?php endfor; ?>
+    </div>
+  </div>
+  </div>
+
+  <div id="grp-wordsearch">
+  <div class="card mt-4">
+    <div class="card-header"><h2>Word Search</h2></div>
+    <div class="card-body">
+      <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Enter up to 8 words to hide (letters only, 2&ndash;12 characters each). They&rsquo;re placed across, down, and diagonally; the player drags across the grid to find them.</small>
+      <?php for ($i = 0; $i < 8; $i++): ?>
+      <div class="map-marker-row">
+        <span class="map-marker-num"><?= $i + 1 ?></span>
+        <input type="text" name="wsword<?= $i + 1 ?>" class="inv-field code-upper"
+               maxlength="12" placeholder="Word <?= $i + 1 ?>" value="<?= e($pWsWords[$i]) ?>">
+      </div>
+      <?php endfor; ?>
+      <div class="form-group" style="margin-top:1rem">
+        <label>Hidden Phrase <span class="req">*</span></label>
+        <input type="text" name="ws_phrase" class="inv-field" maxlength="100"
+               value="<?= e($pWsPhrase) ?>" placeholder="The leftover letters spell this, e.g. THE BUTLER DID IT">
+        <small class="inv-hint">After the player finds every word, the remaining grid letters spell this phrase (letters only, up to 80; spaces &amp; punctuation are ignored), followed by <strong>ZZ</strong> to mark where it ends. The player reads it and types it in to finish. Avoid phrases ending in &ldquo;Z&rdquo;.</small>
+      </div>
+    </div>
+  </div>
+  </div>
+
   <div id="grp-elim">
   <div class="card mt-4">
     <div class="card-header"><h2>Elimination Items</h2></div>
     <div class="card-body">
+      <div class="form-group" style="margin-bottom:1rem">
+        <label>List Heading</label>
+        <input type="text" name="elim_heading" class="inv-field"
+               value="<?= e($pEHeading) ?>" placeholder="Eliminate the wrong items">
+        <small class="inv-hint">Shown above the list of items. Leave blank to use &ldquo;Eliminate the wrong items&rdquo;.</small>
+      </div>
       <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Enter up to 6 items. Tick the <strong>Eliminate</strong> box for each item the player must eliminate (at most 5). The order players see is shuffled.</small>
       <?php for ($i = 0; $i < 6; $i++): ?>
       <div class="map-marker-row">
         <span class="map-marker-num"><?= $i + 1 ?></span>
-        <input type="text" name="item<?= $i + 1 ?>" class="inv-field"
+        <input type="text" name="eitem<?= $i + 1 ?>" class="inv-field"
                placeholder="Item <?= $i + 1 ?>" value="<?= e($pEItems[$i]) ?>">
         <label class="elim-mark"><input type="checkbox" name="elim_mark[<?= $i + 1 ?>]" value="1" <?= $pEMark[$i] ? 'checked' : '' ?>> Eliminate</label>
       </div>
@@ -249,6 +416,47 @@ if ($pShift < 1 || $pShift > 25) { $pShift = 3; }
                value="<?= e($pCode) ?>" placeholder="CAT">
         <small class="inv-hint">The answer word/phrase. Players see it as old-school multi-tap digits (e.g. <strong>CAT</strong> &rarr; <code>222 2 8</code>) and must key it back in. Letters &amp; spaces only; case-insensitive.</small>
       </div>
+    </div>
+  </div>
+  </div>
+
+  <div id="grp-fillblank">
+  <div class="card mt-4">
+    <div class="card-header"><h2>Fill-in-the-Blank Text</h2></div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>Difficulty</label>
+        <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;margin-top:.35rem">
+          <label class="checkbox-label" style="cursor:pointer">
+            <input type="radio" name="fb_difficulty" value="easy" <?= $pFbDifficulty === 'easy' ? 'checked' : '' ?>>
+            <span><strong>Easy</strong> &mdash; word bank shown; players drag words into blanks</span>
+          </label>
+          <label class="checkbox-label" style="cursor:pointer">
+            <input type="radio" name="fb_difficulty" value="hard" <?= $pFbDifficulty === 'hard' ? 'checked' : '' ?>>
+            <span><strong>Hard</strong> &mdash; no word bank; players type the missing words</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Puzzle Text <span class="req">*</span></label>
+        <textarea name="fb_text" class="inv-field" rows="6"
+                  placeholder="Write your passage. Wrap each blank word in braces, e.g.&#10;The quick {brown} fox jumps over the {lazy} dog."
+                  style="font-family:'Courier New',Courier,monospace"><?= e($pFbText) ?></textarea>
+        <small class="inv-hint">Wrap each word that should become a blank in <code>{curly braces}</code>. Up to <strong>10 blanks</strong> are kept; extras are ignored. Matching is case-insensitive.</small>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-4">
+    <div class="card-header"><h2>Fill-in-the-Blank Clues</h2></div>
+    <div class="card-body">
+      <small class="inv-hint" style="margin-top:0;margin-bottom:.6rem">Up to 10 clues shown beside the puzzle to help players figure out the missing words.</small>
+      <?php for ($i = 0; $i < 10; $i++): ?>
+      <div class="map-marker-row">
+        <span class="map-marker-num"><?= $i + 1 ?></span>
+        <input type="text" name="fbclue<?= $i + 1 ?>" class="inv-field"
+               placeholder="Clue <?= $i + 1 ?>" value="<?= e($pFbClues[$i]) ?>">
+      </div>
+      <?php endfor; ?>
     </div>
   </div>
   </div>
@@ -327,42 +535,129 @@ if ($pShift < 1 || $pShift > 25) { $pShift = 3; }
 .input-prefix .inv-field,.input-prefix input{border-radius:0 7px 7px 0}
 .elim-mark{flex:0 0 auto;display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:rgba(255,255,255,.65);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:.4rem .6rem;cursor:pointer;white-space:nowrap;user-select:none}
 .elim-mark input{accent-color:#ef4444}
+.match-pair-row{display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center}
+.match-pair-row .inv-field{flex:1;min-width:0}
+.match-pair-link{flex:0 0 auto;color:#6c63ff;font-size:1.1rem;font-weight:700}
+.hs-edit{position:relative;display:inline-block;max-width:100%;line-height:0;border:1px solid rgba(255,255,255,.14);border-radius:8px;overflow:hidden}
+.hs-edit-img{display:block;max-width:100%;height:auto}
+.hs-edit-layer{position:absolute;inset:0;cursor:crosshair}
+.hs-spot{position:absolute;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:#6c63ff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.hs-radius{position:absolute;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(108,99,255,.7);background:rgba(108,99,255,.14);pointer-events:none;z-index:1}
 </style>
 
 <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 const REWARD_CONTENT = <?= json_encode($pReward) ?>;
+const SEQ_SLUG = <?= json_encode(slugify(is_array($sequence ?? null) ? ($sequence['title'] ?? '') : '')) ?>;
+const IS_NEW   = <?= $isNew ? 'true' : 'false' ?>;
+let slugEdited = false;
+
+// For a new puzzle, default the slug to "<sequence-title>-<puzzle-type>",
+// keeping it in sync with the type until the admin edits the slug themselves.
+function autoPageSlug() {
+  if (!IS_NEW || slugEdited) return;
+  const t = document.getElementById('puzzle-type').value;
+  document.getElementById('slug-field').value = (SEQ_SLUG ? SEQ_SLUG + '-' : '') + t;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const rewQ = initQuill('#reward-editor', REWARD_CONTENT);
   document.getElementById('puzzle-form').addEventListener('submit', function () {
     document.getElementById('reward-content').value = rewQ.root.innerHTML;
   });
 
-  const titleInput = document.getElementById('title-field');
-  const slugField  = document.getElementById('slug-field');
-  titleInput.addEventListener('input', function () {
-    if (slugField.value === '') {
-      slugField.value = this.value.toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').substring(0, 80);
-    }
-  });
+  const slugField = document.getElementById('slug-field');
+  slugField.addEventListener('input', function () { slugEdited = true; });
 
   if (typeof setupLocalPreview === 'function') {
     setupLocalPreview('reward-file', 'reward-preview', 'reward-upload-area');
   }
 
+  autoPageSlug();
   pzTypeToggle();
 });
 
 function pzTypeToggle() {
+  autoPageSlug();
   var t = document.getElementById('puzzle-type').value;
   document.getElementById('grp-order').style.display  = (t === 'order')  ? '' : 'none';
   document.getElementById('grp-caesar').style.display = (t === 'caesar') ? '' : 'none';
   document.getElementById('grp-phone').style.display  = (t === 'phone')  ? '' : 'none';
   document.getElementById('grp-access').style.display = (t === 'access') ? '' : 'none';
   document.getElementById('grp-elim').style.display   = (t === 'elim')   ? '' : 'none';
+  document.getElementById('grp-wordsearch').style.display = (t === 'wordsearch') ? '' : 'none';
+  document.getElementById('grp-match').style.display  = (t === 'match')  ? '' : 'none';
+  document.getElementById('grp-hotspot').style.display = (t === 'hotspot') ? '' : 'none';
+  document.getElementById('grp-fillblank').style.display = (t === 'fillblank') ? '' : 'none';
 }
+
+// ── Hotspot spot-placement editor ─────────────────────────────────────────
+(function () {
+  var wrap = document.getElementById('hs-wrap');
+  if (!wrap) return;
+  var fileInput  = document.getElementById('hs-file');
+  var img        = document.getElementById('hs-img');
+  var layer      = document.getElementById('hs-layer');
+  var radiusEl   = document.getElementById('hs-radius');
+  var radiusVal  = document.getElementById('hs-radius-val');
+  var spotsInput = document.getElementById('hs-spots');
+  var countEl    = document.getElementById('hs-count');
+  var clearBtn   = document.getElementById('hs-clear');
+  var form       = document.getElementById('puzzle-form');
+  var MAX = 5;
+
+  var spots = [];
+  try { spots = JSON.parse(spotsInput.value || '[]') || []; } catch (e) { spots = []; }
+
+  function radius() { return parseFloat(radiusEl.value) || 8; }
+
+  function render() {
+    layer.innerHTML = '';
+    spots.forEach(function (s, i) {
+      var ring = document.createElement('div');
+      ring.className = 'hs-radius';
+      ring.style.left = s.x + '%'; ring.style.top = s.y + '%';
+      ring.style.width = (radius() * 2) + '%'; ring.style.height = (radius() * 2) + '%';
+      layer.appendChild(ring);
+      var dot = document.createElement('div');
+      dot.className = 'hs-spot';
+      dot.style.left = s.x + '%'; dot.style.top = s.y + '%';
+      dot.textContent = (i + 1);
+      dot.setAttribute('data-i', i);
+      layer.appendChild(dot);
+    });
+    if (countEl) { countEl.textContent = spots.length; }
+    spotsInput.value = JSON.stringify(spots);
+  }
+
+  layer.addEventListener('click', function (e) {
+    var sp = e.target.closest('.hs-spot');
+    if (sp) { spots.splice(parseInt(sp.getAttribute('data-i'), 10), 1); render(); return; }
+    if (!img.getAttribute('src') || img.style.display === 'none') { return; }
+    if (spots.length >= MAX) { return; }
+    var rect = layer.getBoundingClientRect();
+    var x = (e.clientX - rect.left) / rect.width * 100;
+    var y = (e.clientY - rect.top) / rect.height * 100;
+    spots.push({ x: Math.round(Math.max(0, Math.min(100, x)) * 100) / 100,
+                 y: Math.round(Math.max(0, Math.min(100, y)) * 100) / 100 });
+    render();
+  });
+
+  radiusEl.addEventListener('input', function () { if (radiusVal) { radiusVal.textContent = radius() + '%'; } render(); });
+  if (clearBtn) { clearBtn.addEventListener('click', function () { spots = []; render(); }); }
+
+  fileInput.addEventListener('change', function () {
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) { return; }
+    var rd = new FileReader();
+    rd.onload = function (ev) { img.src = ev.target.result; img.style.display = 'block'; render(); };
+    rd.readAsDataURL(f);
+  });
+
+  if (form) { form.addEventListener('submit', function () { spotsInput.value = JSON.stringify(spots); }); }
+  render();
+})();
 </script>
 
 <?php
