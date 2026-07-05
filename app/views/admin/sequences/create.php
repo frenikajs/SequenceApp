@@ -12,7 +12,7 @@ ob_start();
 </div>
 <?php endif; ?>
 
-<form method="POST" action="<?= url('admin/sequences/create') ?>" enctype="multipart/form-data" id="sequence-form">
+<form method="POST" action="<?= url('admin/sequences/create') ?>" enctype="multipart/form-data" id="sequence-form" data-autosave="seq-new">
   <?= csrf_field() ?>
 
   <div class="form-grid">
@@ -28,7 +28,8 @@ ob_start();
           </div>
           <div class="form-group">
             <label>Description</label>
-            <textarea name="description" rows="3" placeholder="Brief description for admin reference…"><?= e($input['description'] ?? '') ?></textarea>
+            <div class="quill-editor" id="desc-editor"></div>
+            <input type="hidden" name="description" id="desc-content">
           </div>
           <div class="form-row">
             <div class="form-group flex-1">
@@ -37,7 +38,24 @@ ob_start();
                 <option value="sequential" <?= ($input['type'] ?? 'sequential') === 'sequential' ? 'selected' : '' ?>>Sequential (one clue at a time)</option>
                 <option value="open" <?= ($input['type'] ?? '') === 'open' ? 'selected' : '' ?>>Open (all clues visible)</option>
                 <option value="gameboard" <?= ($input['type'] ?? '') === 'gameboard' ? 'selected' : '' ?>>Game Board (Candy Land tile path)</option>
+                <option value="whodunit" <?= ($input['type'] ?? '') === 'whodunit' ? 'selected' : '' ?>>Who-dun-it (gather evidence, then accuse)</option>
+                <option value="interactive" <?= ($input['type'] ?? '') === 'interactive' ? 'selected' : '' ?>>Interactive (group adopts suspects, then votes)</option>
               </select>
+              <small>Tip: Who-dun-it and Interactive sequences set up their suspects/accusation on the Edit screen after creating.</small>
+            </div>
+          </div>
+          <div class="form-row" id="gb-theme-row" style="<?= ($input['type'] ?? '') === 'gameboard' ? '' : 'display:none' ?>">
+            <div class="form-group flex-1">
+              <label>Game Board Theme</label>
+              <select name="gameboard_theme" id="seq-gb-theme">
+                <?php $gbTheme = $input['gameboard_theme'] ?? 'candyland'; ?>
+                <option value="candyland" <?= $gbTheme === 'candyland' ? 'selected' : '' ?>>Candy Land</option>
+                <option value="winter" <?= $gbTheme === 'winter' ? 'selected' : '' ?>>Winter Wonderland</option>
+                <option value="spooky" <?= $gbTheme === 'spooky' ? 'selected' : '' ?>>Scary Spooky Night</option>
+                <option value="pool" <?= $gbTheme === 'pool' ? 'selected' : '' ?>>Summer Time Pool Party</option>
+                <option value="birthday" <?= $gbTheme === 'birthday' ? 'selected' : '' ?>>Birthday Party</option>
+              </select>
+              <small>Styles the board, tiles, start/finish and clue cards to match the theme.</small>
             </div>
           </div>
           <div class="form-row">
@@ -62,13 +80,8 @@ ob_start();
                 Require Solution Code
               </label>
             </div>
-            <div class="form-group flex-1 align-end">
-              <label class="checkbox-label">
-                <input type="checkbox" name="published" value="1" <?= !empty($input['published']) ? 'checked' : '' ?>>
-                Publish immediately
-              </label>
-            </div>
           </div>
+          <p class="small muted" style="margin:-.25rem 0 .5rem">New sequences start as a <strong>draft</strong>. Publish it from the editor when it&rsquo;s ready.</p>
           <div class="form-group">
             <label>Expires At</label>
             <input type="datetime-local" name="expires_at" value="<?= e($input['expires_at'] ?? '') ?>">
@@ -224,8 +237,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Quill editors
   const introQ    = initQuill('#intro-editor', '<?= e(addslashes($input['introduction_content'] ?? '')) ?>');
   const solutionQ = initQuill('#solution-editor', '<?= e(addslashes($input['solution_content'] ?? '')) ?>');
+  const descQ     = initQuill('#desc-editor', <?= json_encode((string)($input['description'] ?? '')) ?>);
 
   document.getElementById('sequence-form').addEventListener('submit', function() {
+    document.getElementById('desc-content').value     = descQ.root.innerHTML;
     document.getElementById('intro-content').value    = introQ.root.innerHTML;
     document.getElementById('solution-content').value = solutionQ.root.innerHTML;
   });
@@ -233,6 +248,15 @@ document.addEventListener('DOMContentLoaded', function() {
   // File upload previews
   setupLocalPreview('intro-file', 'intro-preview', 'intro-upload-area');
   setupLocalPreview('solution-file', 'solution-preview', 'solution-upload-area');
+
+  // Show the Game Board Theme picker only when the Game Board type is selected.
+  const typeEl = document.getElementById('seq-type');
+  const gbRow  = document.getElementById('gb-theme-row');
+  function toggleGbTheme() {
+    if (gbRow) gbRow.style.display = (typeEl && typeEl.value === 'gameboard') ? '' : 'none';
+  }
+  if (typeEl) typeEl.addEventListener('change', toggleGbTheme);
+  toggleGbTheme();
 });
 </script>
 

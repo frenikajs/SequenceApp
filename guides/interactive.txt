@@ -1,0 +1,116 @@
+HOW TO PLAY — INTERACTIVE MYSTERY
+==================================
+
+GOAL
+----
+You and your team each step into the shoes of a different SUSPECT. As the
+host unlocks each clue, you'll receive private information only your suspect
+knows. Share what you learn, study the shared evidence together, and at the
+end your whole team VOTES on who the real culprit is. Get the vote right to
+solve the mystery!
+
+
+THIS IS A GROUP GAME
+--------------------
+Interactive mysteries are played together as a group — there is no solo mode.
+One person is the HOST (the lead detective who runs the game); everyone else
+JOINS the host's investigation.
+
+
+STARTING THE GAME
+-----------------
+HOST:
+  1. Enter the start code you were given. You'll be taken straight to the
+     lobby, where your GROUP CODE is displayed at the top.
+  2. Read the group code aloud (or tap "Share Code") so your team can join.
+  3. Wait until everyone has joined, then tap "Start Investigation".
+
+EVERYONE ELSE:
+  1. Enter the GROUP CODE from your host.
+  2. You'll wait in the lobby until the host starts the mystery.
+
+  ⚠ Once the host starts, the group is sealed — no one else can join.
+
+
+CHOOSING YOUR SUSPECT
+---------------------
+After the host starts, everyone (including the host) picks a suspect.
+
+  • Tap a suspect card to claim it.
+  • Each detective must choose a DIFFERENT suspect — once someone takes a
+    suspect, it shows as "Taken" for everyone else.
+  • Not every suspect has to be chosen — only one per player.
+  • A live counter shows "X of Y suspects assigned" so you know who's ready.
+
+Once EVERY player has a suspect, the HOST's "Enter Crime Scene" button
+unlocks. The host taps it to begin — and everyone is taken to the case.
+
+
+PLAYING THE CASE
+----------------
+The case plays out one clue at a time, led by the host.
+
+  • The host enters each clue's access code to unlock the next step for the
+    whole team.
+  • When a clue unlocks, everyone sees the shared clue — AND you get a
+    POP-UP with YOUR suspect's private clue for that step. Only you see your
+    suspect's clues.
+  • Your suspect's name is shown in the top corner of the screen.
+
+YOUR GAME CARD
+  If your suspect has a game card, tap the "🎴 Game Card" button in the top
+  bar to view it at any time (it may be an image or a PDF).
+
+EVIDENCE LOCKER
+  Tap "🗂️ Evidence" in the top bar to review everything you've gathered so
+  far — your suspect's private clues as they unlock, plus any rewards earned
+  from puzzles or clue pages.
+
+NEED A HINT?
+  If the host shares a hint for the current step, you'll see it appear on
+  your screen.
+
+
+THE GROUP VOTE
+--------------
+Once all the clues have been unlocked, it's time to accuse.
+
+  1. Every player chooses the suspect they believe is the culprit and taps
+     "Lock In Accusation".
+  2. A counter shows "X of Y detectives have voted".
+  3. When everyone has voted, the team's choice (the most-voted suspect) is
+     revealed to all players.
+
+IF THE GROUP IS RIGHT:
+  🎉 "Correct! Your team solved the mystery." The solution is revealed along
+  with the Case Closed card, the culprit, and a thank-you message.
+
+IF THE GROUP IS WRONG:
+  🚔 "The culprit got away!" The HOST then decides:
+     • "Accuse Again" — the vote is cleared and the whole team votes again.
+     • "Reveal Mystery" — the answer is shown to everyone. The Case Unsolved
+       card appears with a "Better luck next time" message.
+
+
+HOW TO PLAY BUTTON
+------------------
+Tap "❓ How to Play" in the top bar at any time to re-read these
+instructions.
+
+
+SAVING AND SHARING YOUR RESULT
+-------------------------------
+When the case ends, a result card appears showing the mystery title and your
+team's time. Tap "📷 Save/Share" to save or share the card image — on mobile
+the native share sheet opens (choose "Save Image" for Photos); on desktop the
+image downloads automatically.
+
+
+TIPS FOR SOLVING
+----------------
+  • Talk to your team! Your private suspect clues only matter if you share
+    what they reveal.
+  • Each suspect sees a different angle on the case — piece them together.
+  • Don't lock in your vote until your team has compared notes.
+  • The most-voted suspect becomes the team's accusation, so agree together
+    before everyone votes.

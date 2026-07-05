@@ -58,23 +58,25 @@ ob_start();
         <?php else: ?>
         <?php foreach ($recent as $seq): ?>
         <tr>
-          <td>
+          <td data-label="Title">
             <strong><?= e($seq['title']) ?></strong>
             <div class="muted small">/s/<?= e($seq['slug']) ?></div>
           </td>
-          <td><span class="badge badge-<?= $seq['type'] === 'sequential' ? 'blue' : 'purple' ?>"><?= e($seq['type']) ?></span></td>
-          <td>
+          <td data-label="Type"><span class="badge badge-<?= $seq['type'] === 'sequential' ? 'blue' : 'purple' ?>"><?= e($seq['type']) ?></span></td>
+          <td data-label="Status">
             <?php if ($seq['published']): ?>
               <span class="badge badge-green">Published</span>
             <?php else: ?>
               <span class="badge badge-gray">Draft</span>
             <?php endif; ?>
           </td>
-          <td><?= number_format((int)$seq['view_count']) ?></td>
-          <td><?= number_format((int)$seq['completion_count']) ?></td>
-          <td class="actions">
-            <a href="<?= url('admin/sequences/' . $seq['id'] . '/edit') ?>" class="btn btn-secondary btn-xs">Edit</a>
-            <a href="<?= url('s/' . $seq['slug']) ?>" target="_blank" class="btn btn-ghost btn-xs">View</a>
+          <td data-label="Views"><?= number_format((int)$seq['view_count']) ?></td>
+          <td data-label="Completions"><?= number_format((int)$seq['completion_count']) ?></td>
+          <td class="col-actions">
+            <div class="actions">
+              <a href="<?= url('admin/sequences/' . $seq['id'] . '/edit') ?>" class="btn btn-secondary btn-xs">Edit</a>
+              <a href="<?= url('s/' . $seq['slug']) ?>" target="_blank" class="btn btn-ghost btn-xs">View</a>
+            </div>
           </td>
         </tr>
         <?php endforeach; ?>

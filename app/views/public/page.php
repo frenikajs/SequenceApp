@@ -554,11 +554,69 @@ body{font-family:'Courier New',Courier,monospace;background:#d9d9d9;color:#1a1a1
 .rcpt-barcode{margin-top:1rem;text-align:center}
 .rcpt-barcode .bars{font-family:'Courier New',monospace;font-size:2.4rem;letter-spacing:-3px;line-height:1}
 .rcpt-barcode .num{font-size:.74rem;letter-spacing:.28em;margin-top:.2rem}
+/* ── Delivery receipt (furniture-store style printed form) ──────────────────── */
+.dlvry{max-width:620px;margin:0 auto;background:#fffdf6;padding:0;box-shadow:0 6px 22px rgba(0,0,0,.22);border:1px solid #c2b89a;font-family:'Courier New',Courier,monospace;color:#1a1a1a}
+.dlvry-strip{height:10px;background:repeating-linear-gradient(45deg,#bb4019 0 14px,#fffdf6 14px 28px)}
+.dlvry-head{padding:1.2rem 1.6rem .9rem;border-bottom:2px solid #1a1a1a;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+.dlvry-brand{flex:1;min-width:200px}
+.dlvry-brand .store{font-size:1.55rem;font-weight:900;letter-spacing:.04em;line-height:1.05}
+.dlvry-brand .tag{font-size:.74rem;margin-top:.25rem;letter-spacing:.18em;text-transform:uppercase;color:#555}
+.dlvry-stamp{border:2.5px solid #bb4019;color:#bb4019;padding:.4rem .8rem;border-radius:6px;font-size:.85rem;font-weight:900;letter-spacing:.2em;transform:rotate(-3deg);align-self:flex-start}
+.dlvry-meta{padding:.85rem 1.6rem;border-bottom:1px dashed #999;font-size:.82rem;display:grid;grid-template-columns:1fr 1fr;gap:.5rem 1.4rem}
+.dlvry-meta .lbl{font-size:.66rem;letter-spacing:.16em;color:#888;text-transform:uppercase;font-weight:800;margin-bottom:.15rem}
+.dlvry-meta .val{font-weight:700}
+.dlvry-block{padding:.95rem 1.6rem;border-bottom:1px dashed #999}
+.dlvry-block .lbl{font-size:.66rem;letter-spacing:.16em;color:#888;text-transform:uppercase;font-weight:800;margin-bottom:.35rem}
+.dlvry-block .addr{font-size:.92rem;font-weight:700;white-space:pre-line;line-height:1.5}
+.dlvry-itemtbl{width:100%;border-collapse:collapse;margin-top:.4rem;font-size:.86rem}
+.dlvry-itemtbl thead th{text-align:left;font-size:.65rem;letter-spacing:.14em;color:#888;text-transform:uppercase;font-weight:800;border-bottom:1.5px solid #1a1a1a;padding:.4rem .3rem .35rem}
+.dlvry-itemtbl thead th.qty{width:60px;text-align:center}
+.dlvry-itemtbl thead th.room{width:38%}
+.dlvry-itemtbl tbody td{padding:.45rem .3rem;border-bottom:1px dotted #bbb;vertical-align:top}
+.dlvry-itemtbl tbody td.qty{text-align:center;font-weight:700}
+.dlvry-itemtbl tbody td.room{font-style:italic;color:#444}
+.dlvry-itemtbl tbody tr:last-child td{border-bottom:none}
+.dlvry-notes{padding:.95rem 1.6rem;border-bottom:1px dashed #999;background:#fdf5dc}
+.dlvry-notes .lbl{font-size:.66rem;letter-spacing:.16em;color:#7a5a00;text-transform:uppercase;font-weight:800;margin-bottom:.35rem}
+.dlvry-notes .note-body{white-space:pre-line;font-size:.88rem;line-height:1.5}
+.dlvry-sigs{padding:1.1rem 1.6rem 1.2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.dlvry-sig .line{border-top:1.5px solid #1a1a1a;padding-top:.35rem;font-size:.65rem;letter-spacing:.14em;color:#888;text-transform:uppercase;font-weight:800}
+.dlvry-foot{padding:.85rem 1.6rem 1.1rem;text-align:center;font-size:.72rem;color:#555;border-top:1px solid #d8d0b4;background:#f7efd6;letter-spacing:.08em}
+@media(max-width:560px){.dlvry-meta{grid-template-columns:1fr}.dlvry-sigs{grid-template-columns:1fr}.dlvry-itemtbl thead th.room{width:auto}.dlvry-head{padding:1rem 1.1rem .8rem}.dlvry-meta,.dlvry-block,.dlvry-notes,.dlvry-sigs,.dlvry-foot{padding-left:1.1rem;padding-right:1.1rem}}
 </style>
-<?php elseif ($type === 'map'): ?>
+<?php elseif ($type === 'access_log'): ?>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#bdbcb6;color:#1a1a1a;padding:2rem 1rem;line-height:1.4}
+.alog{max-width:560px;margin:0 auto;background:#fff;padding:1.4rem 1.5rem 1.6rem;border:1px solid #1a1a1a;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.alog-title{text-align:center;font-size:1.25rem;font-weight:700;margin-bottom:1rem}
+.alog-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1.5rem;font-size:.88rem;margin-bottom:.4rem}
+.alog-meta .row{display:flex;align-items:baseline;gap:.5rem;flex:1;min-width:200px}
+.alog-meta .lbl{font-weight:700;white-space:nowrap}
+.alog-meta .val{flex:1;border-bottom:1px solid #1a1a1a;padding:0 .25rem .12rem;font-weight:600;min-height:1.1em}
+.alog-tbl{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.86rem}
+.alog-tbl th,.alog-tbl td{border:1px solid #1a1a1a;padding:.45rem .5rem;vertical-align:middle}
+.alog-tbl th{background:#ececec;font-weight:700;font-size:.78rem;text-transform:none;text-align:left}
+.alog-tbl th.t-time{width:90px}
+.alog-tbl th.t-init{width:80px;text-align:center}
+.alog-tbl td.c-time{font-family:'Courier New',Courier,monospace}
+.alog-tbl td.c-init{text-align:center;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.alog-tbl tr.empty td{color:transparent}
+.alog-foot{margin-top:1rem;font-size:.75rem;color:#555;text-align:center;letter-spacing:.04em}
+@media(max-width:520px){.alog{padding:1.1rem 1rem 1.3rem}.alog-meta .row{min-width:0}.alog-tbl{font-size:.78rem}.alog-tbl th.t-time{width:70px}.alog-tbl th.t-init{width:60px}.alog-tbl th,.alog-tbl td{padding:.35rem .3rem}}
+</style>
+<?php elseif ($type === 'map'):
+$__mk = json_decode($page['nav_json'] ?? '[]', true);
+$__mk = is_array($__mk) ? ($__mk['type'] ?? 'street') : 'street';
+?>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
+<?php if ($__mk === 'floorplan'): ?>
+body{font-family:'Courier New',monospace;background:#0d2b5e;color:#dce6f5;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.bp-frame{position:relative;flex:1;overflow:hidden;background:#0d2b5e}
+.bp-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+<?php else: ?>
 body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#e8eaed;color:#202124;display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .gmap-header{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);padding:.7rem 1.25rem;display:flex;align-items:center;gap:.85rem;z-index:5;flex-shrink:0}
 .gmap-pin-mini{width:30px;height:30px;background:#ea4335;border-radius:50% 50% 50% 0;transform:rotate(-45deg);flex-shrink:0;position:relative}
@@ -575,6 +633,7 @@ body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#e8eaed;color:#20
 .gmap-zoom button:first-child{border-bottom:1px solid #e0e0e0}
 .gmap-footer{position:absolute;left:14px;bottom:14px;background:rgba(255,255,255,.92);font-size:.74rem;color:#5f6368;padding:5px 10px;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.2);z-index:4;max-width:60%}
 .gmap-cred{position:absolute;right:14px;bottom:6px;font-size:.66rem;color:#80868b;z-index:4}
+<?php endif; ?>
 </style>
 <?php endif; ?>
 </head>
@@ -1652,11 +1711,80 @@ $rcDate    = $page['publish_date']
 $rcTime    = $page['publish_date']
     ? htmlspecialchars(date('h:i A', strtotime($page['publish_date'])), ENT_QUOTES, 'UTF-8')
     : htmlspecialchars(date('h:i A'), ENT_QUOTES, 'UTF-8');
-$rcLines   = json_decode($page['nav_json'] ?? '[]', true) ?: [];
+$rcRaw  = json_decode($page['nav_json'] ?? '[]', true) ?: [];
+$rcKind = (is_array($rcRaw) && ($rcRaw['type'] ?? '') === 'delivery') ? 'delivery' : 'store';
+$rcLines = ($rcKind === 'store') ? (is_array($rcRaw) ? $rcRaw : []) : [];
 $rcTotal   = 0.0;
 foreach ($rcLines as $rl) { $rcTotal += (float)($rl['price'] ?? 0); }
 $rcCount   = 0;
 ?>
+<?php if ($rcKind === 'delivery'):
+$dlvAddr  = (string)($rcRaw['address'] ?? '');
+$dlvNotes = (string)($rcRaw['notes']   ?? '');
+$dlvTime  = (string)($rcRaw['time']    ?? '');
+$dlvItems = array_values(array_filter(
+    is_array($rcRaw['items'] ?? null) ? $rcRaw['items'] : [],
+    static fn ($r) => is_array($r) && trim((string)($r['item'] ?? '')) !== ''
+));
+$dlvOrder = 'D-' . date('Ymd', strtotime($page['publish_date'] ?? 'now')) . str_pad((string)($page['id'] ?? 0), 4, '0', STR_PAD_LEFT);
+// Format the stored time (HH:MM[:SS]) as 12-hour "h:i A". Empty time → just the date.
+$dlvTimeShown = '';
+if ($dlvTime !== '' && ($__ts = strtotime('1970-01-01 ' . $dlvTime)) !== false) {
+    $dlvTimeShown = htmlspecialchars(date('h:i A', $__ts), ENT_QUOTES, 'UTF-8');
+}
+?>
+<div class="dlvry">
+  <div class="dlvry-strip" aria-hidden="true"></div>
+  <div class="dlvry-head">
+    <div class="dlvry-brand">
+      <div class="store"><?= $rcStore ?></div>
+      <div class="tag">Delivery Receipt</div>
+    </div>
+    <div class="dlvry-stamp">DELIVERED</div>
+  </div>
+  <div class="dlvry-meta">
+    <div><div class="lbl">Order #</div><div class="val"><?= htmlspecialchars($dlvOrder, ENT_QUOTES, 'UTF-8') ?></div></div>
+    <div><div class="lbl">Delivery Date</div><div class="val"><?= $rcDate ?><?php if ($dlvTimeShown !== ''): ?> &nbsp; <?= $dlvTimeShown ?><?php endif; ?></div></div>
+    <?php if ($rcCashier !== ''): ?><div><div class="lbl">Driver</div><div class="val"><?= $rcCashier ?></div></div><?php endif; ?>
+    <?php if ($rcAddr !== ''): ?><div><div class="lbl">Customer</div><div class="val"><?= $rcAddr ?></div></div><?php endif; ?>
+  </div>
+  <?php if (trim($dlvAddr) !== ''): ?>
+  <div class="dlvry-block">
+    <div class="lbl">Delivery Address</div>
+    <div class="addr"><?= htmlspecialchars($dlvAddr, ENT_QUOTES, 'UTF-8') ?></div>
+  </div>
+  <?php endif; ?>
+  <div class="dlvry-block">
+    <div class="lbl">Items &amp; Room Placement</div>
+    <table class="dlvry-itemtbl">
+      <thead><tr><th class="qty">Qty</th><th>Item</th><th class="room">Room</th></tr></thead>
+      <tbody>
+        <?php foreach ($dlvItems as $di): ?>
+        <tr>
+          <td class="qty">1</td>
+          <td><?= htmlspecialchars((string)($di['item'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+          <td class="room"><?= htmlspecialchars((string)($di['room'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+        </tr>
+        <?php endforeach; ?>
+        <?php if (empty($dlvItems)): ?>
+        <tr><td class="qty">—</td><td><em>No items listed.</em></td><td class="room">—</td></tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+  <?php if (trim($dlvNotes) !== ''): ?>
+  <div class="dlvry-notes">
+    <div class="lbl">Delivery Notes</div>
+    <div class="note-body"><?= htmlspecialchars($dlvNotes, ENT_QUOTES, 'UTF-8') ?></div>
+  </div>
+  <?php endif; ?>
+  <div class="dlvry-sigs">
+    <div class="dlvry-sig"><div class="line">Driver Signature</div></div>
+    <div class="dlvry-sig"><div class="line">Customer Signature</div></div>
+  </div>
+  <div class="dlvry-foot"><?php if ($rcFoot !== ''): ?><?= $rcFoot ?><?php else: ?>Thank you for your order. Please inspect items before signing.<?php endif; ?></div>
+</div>
+<?php else: ?>
 <div class="rcpt">
   <div class="rcpt-head">
     <div class="rcpt-store"><?= $rcStore ?></div>
@@ -1701,6 +1829,56 @@ $rcCount   = 0;
     <div class="num"><?= htmlspecialchars(date('Ymd') . str_pad((string)($page['id'] ?? 0), 6, '0', STR_PAD_LEFT), ENT_QUOTES, 'UTF-8') ?></div>
   </div>
 </div>
+<?php endif; // store vs delivery ?>
+
+<?php elseif ($type === 'access_log'):
+$alogTitle = htmlspecialchars($page['site_name']   ?? 'Access Log',           ENT_QUOTES, 'UTF-8');
+$alogDesc  = htmlspecialchars($page['page_title']  ?? '',                     ENT_QUOTES, 'UTF-8');
+$alogBy    = htmlspecialchars($page['author']      ?? '',                     ENT_QUOTES, 'UTF-8');
+$alogFoot  = htmlspecialchars($page['footer_text'] ?? '',                     ENT_QUOTES, 'UTF-8');
+$alogDate  = $page['publish_date']
+    ? htmlspecialchars(date('m/d/Y', strtotime($page['publish_date'])), ENT_QUOTES, 'UTF-8')
+    : htmlspecialchars(date('m/d/Y'), ENT_QUOTES, 'UTF-8');
+$alogRaw = json_decode($page['nav_json'] ?? '[]', true) ?: [];
+$alogEntries = (is_array($alogRaw) && isset($alogRaw['entries']) && is_array($alogRaw['entries']))
+    ? $alogRaw['entries'] : (is_array($alogRaw) ? $alogRaw : []);
+// Render only entries that have at least one field filled.
+$alogRows = array_values(array_filter($alogEntries, static function ($r) {
+    return is_array($r) && (
+        trim((string)($r['time']     ?? '')) !== '' ||
+        trim((string)($r['initials'] ?? '')) !== '' ||
+        trim((string)($r['desc']     ?? '')) !== ''
+    );
+}));
+?>
+<div class="alog">
+  <div class="alog-title"><?= $alogTitle ?></div>
+  <div class="alog-meta">
+    <?php if ($alogDesc !== ''): ?>
+    <div class="row"><span class="lbl">Equipment:</span><span class="val"><?= $alogDesc ?></span></div>
+    <?php endif; ?>
+    <div class="row"><span class="lbl">Date:</span><span class="val"><?= $alogDate ?></span></div>
+    <?php if ($alogBy !== ''): ?>
+    <div class="row"><span class="lbl">Logged By:</span><span class="val"><?= $alogBy ?></span></div>
+    <?php endif; ?>
+  </div>
+  <table class="alog-tbl">
+    <thead><tr><th class="t-time">Time</th><th>Action Taken / Comments</th><th class="t-init">Initials</th></tr></thead>
+    <tbody>
+      <?php foreach ($alogRows as $row): ?>
+      <tr>
+        <td class="c-time"><?= htmlspecialchars((string)($row['time']     ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+        <td><?= htmlspecialchars((string)($row['desc']     ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+        <td class="c-init"><?= htmlspecialchars((string)($row['initials'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+      </tr>
+      <?php endforeach; ?>
+      <?php for ($i = count($alogRows); $i < 10; $i++): ?>
+      <tr class="empty"><td class="c-time">&nbsp;</td><td>&nbsp;</td><td class="c-init">&nbsp;</td></tr>
+      <?php endfor; ?>
+    </tbody>
+  </table>
+  <?php if ($alogFoot !== ''): ?><div class="alog-foot"><?= $alogFoot ?></div><?php endif; ?>
+</div>
 
 <?php elseif ($type === 'map'):
 $mapArea    = htmlspecialchars($page['site_name'] ?? 'Map', ENT_QUOTES, 'UTF-8');
@@ -1708,12 +1886,14 @@ $mapSub     = htmlspecialchars($page['author'] ?? '', ENT_QUOTES, 'UTF-8');
 $mapCaption = htmlspecialchars($page['footer_text'] ?? '', ENT_QUOTES, 'UTF-8');
 $mapDecoded = json_decode($page['nav_json'] ?? '[]', true) ?: [];
 if (isset($mapDecoded['markers']) && is_array($mapDecoded['markers'])) {
-    $mapKind    = ($mapDecoded['type'] ?? 'street') === 'festival' ? 'festival' : 'street';
+    $mapKind    = in_array($mapDecoded['type'] ?? 'street', ['street', 'festival', 'floorplan'], true) ? $mapDecoded['type'] : 'street';
     $mapMarkers = $mapDecoded['markers'];
 } else {
     $mapKind    = 'street';
     $mapMarkers = is_array($mapDecoded) ? $mapDecoded : [];
 }
+?>
+<?php if ($mapKind !== 'floorplan'):
 $mapPos = $mapKind === 'festival'
     ? [[38, 50], [63, 22], [60, 52], [16, 44], [41, 80], [80, 38]]
     : [[20, 27], [71, 20], [47, 53], [29, 75], [79, 67], [50, 14]];
@@ -1900,7 +2080,7 @@ $mapPos = $mapKind === 'festival'
     if ($label === '') continue;
     [$px, $py] = $mapPos[$i];
   ?>
-  <div class="gmap-pin" style="left:<?= $px ?>%;top:<?= $py ?>%">
+  <div class="gmap-pin" data-mx="<?= $px ?>" data-my="<?= $py ?>" style="left:<?= $px ?>%;top:<?= $py ?>%">
     <svg width="30" height="42" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 0C7 0 0 6.6 0 15c0 11 15 27 15 27s15-16 15-27C30 6.6 23 0 15 0z" fill="#ea4335"/>
       <circle cx="15" cy="15" r="9" fill="#b31412"/>
@@ -1914,7 +2094,167 @@ $mapPos = $mapKind === 'festival'
   <?php if ($mapCaption): ?><div class="gmap-footer"><?= $mapCaption ?></div><?php endif; ?>
   <div class="gmap-cred">Map data &copy;<?= date('Y') ?></div>
 </div>
+<script>
+/* The map SVG fills the frame with preserveAspectRatio="...slice" (cover), so on
+   non-desktop aspect ratios the artwork is cropped/zoomed. Pins are screen-pixel
+   sized overlays, so we must place them using the SAME slice transform the SVG
+   uses — otherwise (e.g. on phones) they drift off their map features. */
+(function () {
+  var frame = document.querySelector('.gmap-frame');
+  var svg   = frame && frame.querySelector('.gmap-svg');
+  if (!frame || !svg) { return; }
+  var vb  = (svg.getAttribute('viewBox') || '0 0 1000 640').split(/\s+/).map(parseFloat);
+  var vbW = vb[2] || 1000, vbH = vb[3] || 640;
+  var pins = [].slice.call(frame.querySelectorAll('.gmap-pin'));
+  function layout() {
+    var W = frame.clientWidth, H = frame.clientHeight;
+    if (!W || !H) { return; }
+    var s  = Math.max(W / vbW, H / vbH);           // "slice" => cover scale
+    var ox = (W - vbW * s) / 2, oy = (H - vbH * s) / 2;
+    pins.forEach(function (pin) {
+      var mx = parseFloat(pin.getAttribute('data-mx')) || 0;
+      var my = parseFloat(pin.getAttribute('data-my')) || 0;
+      pin.style.left = (ox + (mx / 100 * vbW) * s) + 'px';
+      pin.style.top  = (oy + (my / 100 * vbH) * s) + 'px';
+    });
+  }
+  layout();
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', layout);
+  if (window.ResizeObserver) { new ResizeObserver(layout).observe(frame); }
+})();
+</script>
+<?php else:
+// Floorplan map kind: the six map markers are the room names of a fixed house
+// blueprint — central vertical hallway with 3 rooms each side, all opening into it.
+$bpName   = strtoupper((string)($page['site_name'] ?? 'Floor Plan'));
+$bpSub    = (string)($page['author'] ?? '');
+$bpFooter = (string)($page['footer_text'] ?? '');
+$bpRooms = [];
+foreach ($mapMarkers as $m) { $bpRooms[] = (string)($m['label'] ?? ''); }
+while (count($bpRooms) < 6) { $bpRooms[] = ''; }
+$bpCenters = [[260, 167], [260, 340], [260, 513], [740, 167], [740, 340], [740, 513]];
+$bpE = static fn ($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+?>
+<div class="bp-frame">
+  <svg class="bp-svg" viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1000" height="720" fill="#0d2b5e"/>
+    <!-- drawing border -->
+    <rect x="22" y="22" width="956" height="676" fill="none" stroke="#dce6f5" stroke-width="2"/>
+    <rect x="31" y="31" width="938" height="658" fill="none" stroke="#7fa3d8" stroke-width="1"/>
 
+    <!-- WALLS -->
+    <g stroke="#eaf1fb" stroke-width="7" fill="none" stroke-linecap="square">
+      <rect x="90" y="80" width="820" height="520"/>
+      <!-- central hallway walls -->
+      <line x1="430" y1="80" x2="430" y2="600"/>
+      <line x1="570" y1="80" x2="570" y2="600"/>
+      <!-- left-side room dividers -->
+      <line x1="90" y1="253" x2="430" y2="253"/>
+      <line x1="90" y1="426" x2="430" y2="426"/>
+      <!-- right-side room dividers -->
+      <line x1="570" y1="253" x2="910" y2="253"/>
+      <line x1="570" y1="426" x2="910" y2="426"/>
+    </g>
+
+    <!-- OPENINGS: erase wall with the background colour (doors, main entrance, windows) -->
+    <g stroke="#0d2b5e" stroke-width="11" stroke-linecap="butt">
+      <!-- each room's door into the hallway -->
+      <line x1="430" y1="135" x2="430" y2="200"/>
+      <line x1="430" y1="308" x2="430" y2="373"/>
+      <line x1="430" y1="480" x2="430" y2="545"/>
+      <line x1="570" y1="135" x2="570" y2="200"/>
+      <line x1="570" y1="308" x2="570" y2="373"/>
+      <line x1="570" y1="480" x2="570" y2="545"/>
+      <!-- main entrance (hallway out of the house) -->
+      <line x1="460" y1="600" x2="540" y2="600"/>
+      <!-- windows -->
+      <line x1="180" y1="80"  x2="280" y2="80"/>
+      <line x1="910" y1="120" x2="910" y2="210"/>
+      <line x1="910" y1="470" x2="910" y2="560"/>
+      <!-- door directly connecting the two right-hand rooms -->
+      <line x1="695" y1="426" x2="755" y2="426"/>
+      <!-- exterior door out of the bottom-left room -->
+      <line x1="180" y1="600" x2="250" y2="600"/>
+      <!-- hidden passage between the two top-left rooms -->
+      <line x1="150" y1="253" x2="210" y2="253"/>
+    </g>
+
+    <!-- DOOR leaves (open door into each room, off the hallway) -->
+    <g stroke="#acc4ea" stroke-width="2.5" fill="none" stroke-linecap="round">
+      <line x1="430" y1="135" x2="384" y2="181"/>
+      <line x1="430" y1="308" x2="384" y2="354"/>
+      <line x1="430" y1="480" x2="384" y2="526"/>
+      <line x1="570" y1="135" x2="616" y2="181"/>
+      <line x1="570" y1="308" x2="616" y2="354"/>
+      <line x1="570" y1="480" x2="616" y2="526"/>
+      <!-- door connecting the two right-hand rooms -->
+      <line x1="695" y1="426" x2="741" y2="472"/>
+      <!-- exterior door from the bottom-left room -->
+      <line x1="180" y1="600" x2="226" y2="554"/>
+    </g>
+
+    <!-- MAIN ENTRANCE (bold door + outdoor steps + label) -->
+    <g stroke="#ffd166" stroke-width="3" fill="none" stroke-linecap="round">
+      <line x1="460" y1="600" x2="460" y2="552"/>
+    </g>
+    <g stroke="#ffd166" stroke-width="2">
+      <line x1="452" y1="610" x2="548" y2="610"/>
+      <line x1="460" y1="619" x2="540" y2="619"/>
+    </g>
+    <text x="500" y="640" text-anchor="middle" font-size="12" fill="#ffd166" letter-spacing="1" font-family="'Courier New',monospace">MAIN ENTRANCE</text>
+
+    <!-- WINDOWS (glass = thin double line + jamb caps) -->
+    <g stroke="#bcd3f2" stroke-width="2" fill="none">
+      <line x1="180" y1="77" x2="280" y2="77"/><line x1="180" y1="83" x2="280" y2="83"/>
+      <line x1="180" y1="72" x2="180" y2="88"/><line x1="280" y1="72" x2="280" y2="88"/>
+      <line x1="907" y1="120" x2="907" y2="210"/><line x1="913" y1="120" x2="913" y2="210"/>
+      <line x1="902" y1="120" x2="918" y2="120"/><line x1="902" y1="210" x2="918" y2="210"/>
+      <line x1="907" y1="470" x2="907" y2="560"/><line x1="913" y1="470" x2="913" y2="560"/>
+      <line x1="902" y1="470" x2="918" y2="470"/><line x1="902" y1="560" x2="918" y2="560"/>
+    </g>
+
+    <!-- HIDDEN PASSAGE (dashed corridor linking two rooms) -->
+    <g stroke="#86c8b0" stroke-width="2" fill="none" stroke-dasharray="8 6">
+      <line x1="150" y1="229" x2="150" y2="277"/>
+      <line x1="210" y1="229" x2="210" y2="277"/>
+    </g>
+
+    <!-- HALLWAY label -->
+    <text transform="rotate(-90 500 340)" x="500" y="340" text-anchor="middle" font-size="19" font-weight="700" letter-spacing="5" fill="#9fb8e0" font-family="'Courier New',monospace">HALLWAY</text>
+
+    <!-- ROOM PINS + NAMES -->
+    <g text-anchor="middle" font-family="'Courier New',monospace" fill="#eaf1fb">
+      <?php foreach ($bpCenters as $i => $c):
+          $nm = trim($bpRooms[$i]); if ($nm === '') { $nm = 'Room ' . ($i + 1); }
+          [$cx, $cy] = $c; ?>
+      <circle cx="<?= $cx ?>" cy="<?= $cy - 18 ?>" r="8" fill="none" stroke="#ffd166" stroke-width="2.5"/>
+      <circle cx="<?= $cx ?>" cy="<?= $cy - 18 ?>" r="2.5" fill="#ffd166"/>
+      <text x="<?= $cx ?>" y="<?= $cy + 12 ?>" font-size="18" font-weight="700" letter-spacing="1.5"><?= $bpE($nm) ?></text>
+      <?php endforeach; ?>
+    </g>
+
+    <!-- TITLE BLOCK -->
+    <g font-family="'Courier New',monospace" fill="#eaf1fb">
+      <line x1="100" y1="614" x2="400" y2="614" stroke="#7fa3d8" stroke-width="1"/>
+      <text x="100" y="641" font-size="23" font-weight="700" letter-spacing="3"><?= $bpE($bpName) ?></text>
+      <?php if ($bpSub !== ''): ?><text x="100" y="661" font-size="13" fill="#bcd3f2"><?= $bpE($bpSub) ?></text><?php endif; ?>
+      <?php if ($bpFooter !== ''): ?><text x="100" y="<?= $bpSub !== '' ? 679 : 661 ?>" font-size="11" fill="#9fb8e0"><?= $bpE($bpFooter) ?></text><?php endif; ?>
+    </g>
+
+    <!-- NORTH ARROW -->
+    <g transform="translate(862,648)" stroke="#dce6f5" fill="none" stroke-width="2">
+      <circle r="26"/>
+      <path d="M0,-19 L8,9 L0,2 L-8,9 Z" fill="#dce6f5" stroke="none"/>
+      <text x="0" y="-30" text-anchor="middle" font-size="13" fill="#dce6f5" stroke="none" font-family="'Courier New',monospace">N</text>
+    </g>
+  </svg>
+</div>
+<?php endif; // map kind: floorplan vs street/festival ?>
+
+<?php endif; ?>
+<?php if (isset($_GET['print'])): ?>
+<script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 350); });</script>
 <?php endif; ?>
 </body>
 </html>

@@ -17,7 +17,7 @@ class MediaController
         $mediaSlot = $_POST['media_slot'] ?? '';
         $fileKey   = $_POST['file_key']   ?? 'file';
 
-        if (!$targetId || !in_array($target, ['sequence', 'clue'], true)) {
+        if (!$targetId || !in_array($target, ['sequence', 'clue', 'whodunit', 'suspect'], true)) {
             jsonResponse(['success' => false, 'error' => 'Invalid target.'], 400);
         }
 
@@ -26,12 +26,26 @@ class MediaController
             jsonResponse(['success' => false, 'error' => 'No file received.'], 400);
         }
 
-        $subdir  = $target === 'sequence' ? (string)$targetId : 'clue-' . $targetId;
+        $subdir  = $target === 'clue' ? 'clue-' . $targetId : (string)$targetId;
         $uploader = new FileUpload();
         $info     = $uploader->handle($file, $subdir);
 
         if ($info === false) {
             jsonResponse(['success' => false, 'error' => implode(' ', $uploader->getErrors())], 422);
+        }
+
+        // Whodunit character cards, Interactive game cards, and suspect-clue media
+        // aren't tied to a fixed DB column — the path is embedded into the form
+        // (accusation_json / the suspect-clues matrix) when it's saved.
+        if ($target === 'whodunit' || $target === 'suspect') {
+            jsonResponse([
+                'success'       => true,
+                'file_path'     => $info['file_path'],
+                'file_type'     => $info['file_type'],
+                'original_name' => $info['original_filename'],
+                'file_size'     => formatFileSize($info['file_size']),
+                'url'           => UPLOAD_URL . '/' . $info['file_path'],
+            ]);
         }
 
         // Persist to DB

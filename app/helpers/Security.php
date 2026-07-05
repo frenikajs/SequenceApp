@@ -98,6 +98,10 @@ class Security
         if (session_status() === PHP_SESSION_ACTIVE) {
             return;
         }
+        // Keep the server-side session alive as long as the cookie (default
+        // gc_maxlifetime is ~24min, which would expire a long-open game page and
+        // drop its CSRF token + progress mid-play).
+        ini_set('session.gc_maxlifetime', (string) SESSION_LIFETIME);
         session_set_cookie_params([
             'lifetime' => SESSION_LIFETIME,
             'path'     => '/',
@@ -125,6 +129,14 @@ class Security
         header('X-Content-Type-Options: nosniff');
         header('X-XSS-Protection: 1; mode=block');
         header('Referrer-Policy: strict-origin-when-cross-origin');
+
+        // Don't cache dynamic HTML. Every page embeds a session-bound CSRF token, so
+        // a cached/back-forward-cached page (common on mobile Safari) would submit a
+        // STALE token and trigger "CSRF token mismatch". no-store also disables the
+        // bfcache. Static uploads override this with their own Cache-Control header
+        // (FileUpload::serve), so media caching is unaffected.
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
     }
 
     // ── IP helper ─────────────────────────────────────────────────────────────

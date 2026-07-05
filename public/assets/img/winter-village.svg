@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="180" viewBox="0 0 480 180">
+  <!-- A repeatable tile of a snowy pastel village: warm-lit windows, snow-capped
+       roofs, little evergreens. Repeats along the horizon behind the board. -->
+  <g>
+    <!-- evergreen left -->
+    <polygon points="14,170 30,120 46,170" fill="#2e4d4a"/>
+    <polygon points="16,150 30,112 44,150" fill="#375a55"/>
+    <rect x="27" y="168" width="6" height="8" fill="#3a2c22"/>
+
+    <!-- house 1 (pink) -->
+    <rect x="52" y="98" width="74" height="74" fill="#8a6a8f"/>
+    <rect x="63" y="112" width="16" height="20" rx="2" fill="#ffd98a"/>
+    <rect x="99" y="112" width="16" height="20" rx="2" fill="#ffd98a"/>
+    <rect x="80" y="142" width="18" height="30" rx="2" fill="#caa06a"/>
+    <polygon points="44,101 89,60 134,101" fill="#eaf2ff"/>
+    <polygon points="44,101 89,72 134,101" fill="#ffffff" opacity="0.6"/>
+
+    <!-- house 2 (tall blue) -->
+    <rect x="140" y="78" width="64" height="94" fill="#4c5d8c"/>
+    <rect x="150" y="92" width="14" height="18" rx="2" fill="#ffd98a"/>
+    <rect x="180" y="92" width="14" height="18" rx="2" fill="#ffd98a"/>
+    <rect x="150" y="124" width="14" height="18" rx="2" fill="#ffd07a"/>
+    <rect x="180" y="124" width="14" height="18" rx="2" fill="#ffd98a"/>
+    <polygon points="132,81 172,46 212,81" fill="#eaf2ff"/>
+    <polygon points="132,81 172,58 212,81" fill="#ffffff" opacity="0.6"/>
+
+    <!-- tower spire -->
+    <rect x="216" y="92" width="30" height="80" fill="#5a6aa0"/>
+    <rect x="224" y="106" width="14" height="20" rx="2" fill="#ffd98a"/>
+    <polygon points="216,94 231,40 246,94" fill="#dfeaff"/>
+
+    <!-- house 3 (lavender) -->
+    <rect x="256" y="106" width="84" height="66" fill="#7d6a9c"/>
+    <rect x="270" y="120" width="18" height="20" rx="2" fill="#ffd98a"/>
+    <rect x="308" y="120" width="18" height="20" rx="2" fill="#ffd98a"/>
+    <polygon points="248,109 298,72 348,109" fill="#eaf2ff"/>
+    <polygon points="248,109 298,84 348,109" fill="#ffffff" opacity="0.6"/>
+
+    <!-- evergreen mid -->
+    <polygon points="352,172 372,112 392,172" fill="#2e4d4a"/>
+    <polygon points="355,150 372,104 389,150" fill="#375a55"/>
+    <rect x="368" y="170" width="8" height="8" fill="#3a2c22"/>
+
+    <!-- house 4 (teal small) -->
+    <rect x="398" y="116" width="62" height="56" fill="#4a6a78"/>
+    <rect x="410" y="128" width="16" height="18" rx="2" fill="#ffd98a"/>
+    <rect x="434" y="128" width="16" height="18" rx="2" fill="#ffd98a"/>
+    <polygon points="390,119 429,88 468,119" fill="#eaf2ff"/>
+    <polygon points="390,119 429,100 468,119" fill="#ffffff" opacity="0.6"/>
+  </g>
+</svg>

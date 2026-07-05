@@ -30,8 +30,9 @@ $seqId = (int)$sequence['id'];
     <span class="muted">Avg time</span>
   </div>
   <div class="analytic-item">
-    <a href="<?= url('s/' . $sequence['slug']) ?>" target="_blank" class="btn btn-ghost btn-sm">
-      View Live ↗
+    <a href="<?= url('s/' . $sequence['slug']) ?>" target="_blank" class="btn btn-ghost btn-sm"
+       title="Opens the live page. As an admin your views &amp; completions aren't counted, and the codes are shown so you can walk the whole sequence.">
+      🛠️ Play-test ↗
     </a>
   </div>
   <div class="analytic-item">
@@ -42,13 +43,31 @@ $seqId = (int)$sequence['id'];
     </button>
   </div>
   <div class="analytic-item">
-    <a href="<?= url('admin/sequences/' . $seqId . '/clues') ?>" class="btn btn-secondary btn-sm">
+    <a href="<?= url('admin/sequences/' . $seqId . '/print') ?>" target="_blank" class="btn btn-ghost btn-sm"
+       title="Printable QR codes for the start link, puzzles and pages">
+      🔳 QR Kit ↗
+    </a>
+  </div>
+  <div class="analytic-item">
+    <a href="<?= url('admin/sequences/' . $seqId . '/answer-guide') ?>" target="_blank" class="btn btn-ghost btn-sm"
+       title="Download a PDF answer key: every code and puzzle answer in play order">
+      📥 Download Answer Guide
+    </a>
+  </div>
+  <div class="analytic-item">
+    <a href="<?= url('admin/sequences/' . $seqId . '/overview') ?>" class="btn btn-ghost btn-sm"
+       title="See the whole mystery flow at a glance">
+      🗺 Overview
+    </a>
+  </div>
+  <div class="analytic-item">
+    <a href="<?= url('admin/sequences/' . $seqId . '/clues') ?>" class="btn btn-secondary btn-sm js-leave-guard">
       Manage Clues
     </a>
   </div>
 </div>
 
-<form method="POST" action="<?= url('admin/sequences/' . $seqId . '/edit') ?>" enctype="multipart/form-data" id="sequence-form">
+<form method="POST" action="<?= url('admin/sequences/' . $seqId . '/edit') ?>" enctype="multipart/form-data" id="sequence-form" data-autosave="seq-<?= $seqId ?>">
   <?= csrf_field() ?>
 
   <div class="form-grid">
@@ -65,22 +84,40 @@ $seqId = (int)$sequence['id'];
             <label>Slug</label>
             <div class="input-prefix">
               <span class="prefix-text">/s/</span>
-              <input type="text" name="slug" value="<?= e($sequence['slug']) ?>">
+              <input type="text" name="slug" value="<?= e($sequence['slug']) ?>"
+                     placeholder="leave blank to use the title">
             </div>
-            <small>Change carefully — existing links will break.</small>
+            <small>Change carefully — existing links will break. Leave blank to regenerate from the title.</small>
           </div>
           <div class="form-group">
             <label>Description</label>
-            <textarea name="description" rows="3"><?= e($sequence['description'] ?? '') ?></textarea>
+            <div class="quill-editor" id="desc-editor"></div>
+            <input type="hidden" name="description" id="desc-content">
           </div>
           <div class="form-row">
             <div class="form-group flex-1">
               <label>Type</label>
-              <select name="type">
+              <select name="type" id="seq-type">
                 <option value="sequential" <?= $sequence['type'] === 'sequential' ? 'selected' : '' ?>>Sequential</option>
                 <option value="open" <?= $sequence['type'] === 'open' ? 'selected' : '' ?>>Open</option>
                 <option value="gameboard" <?= $sequence['type'] === 'gameboard' ? 'selected' : '' ?>>Game Board</option>
+                <option value="whodunit" <?= $sequence['type'] === 'whodunit' ? 'selected' : '' ?>>Who-dun-it (Deduction)</option>
+                <option value="interactive" <?= $sequence['type'] === 'interactive' ? 'selected' : '' ?>>Interactive (Group / Suspects)</option>
               </select>
+            </div>
+          </div>
+          <div class="form-row" id="gb-theme-row"<?= ($sequence['type'] ?? '') === 'gameboard' ? '' : ' style="display:none"' ?>>
+            <div class="form-group flex-1">
+              <label>Game Board Theme</label>
+              <?php $gbTheme = $sequence['gameboard_theme'] ?? 'candyland'; ?>
+              <select name="gameboard_theme" id="seq-gb-theme">
+                <option value="candyland" <?= $gbTheme === 'candyland' ? 'selected' : '' ?>>Candy Land</option>
+                <option value="winter" <?= $gbTheme === 'winter' ? 'selected' : '' ?>>Winter Wonderland</option>
+                <option value="spooky" <?= $gbTheme === 'spooky' ? 'selected' : '' ?>>Scary Spooky Night</option>
+                <option value="pool" <?= $gbTheme === 'pool' ? 'selected' : '' ?>>Summer Time Pool Party</option>
+                <option value="birthday" <?= $gbTheme === 'birthday' ? 'selected' : '' ?>>Birthday Party</option>
+              </select>
+              <small>Styles the board, tiles, start/finish and clue cards to match the theme.</small>
             </div>
           </div>
           <div class="form-row">
@@ -89,13 +126,14 @@ $seqId = (int)$sequence['id'];
               <input type="text" name="start_code" class="code-upper" required value="<?= e($sequence['start_code']) ?>">
               <small>Players enter this to access the mystery.</small>
             </div>
-            <div class="form-group flex-1">
+<?php $noSolCode = in_array($sequence['type'] ?? '', ['whodunit', 'interactive'], true); ?>
+            <div class="form-group flex-1" id="solcode-field"<?= $noSolCode ? ' style="display:none"' : '' ?>>
               <label>Solution Code</label>
               <input type="text" name="finale_code" class="code-upper" value="<?= e($sequence['finale_code'] ?? '') ?>">
               <small>Entered on &ldquo;Ready to Solve?&rdquo; to reveal the Solution.</small>
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-row" id="reqcode-row"<?= $noSolCode ? ' style="display:none"' : '' ?>>
             <div class="form-group flex-1">
               <label class="checkbox-label">
                 <input type="checkbox" name="finale_requires_code" value="1"
@@ -103,18 +141,6 @@ $seqId = (int)$sequence['id'];
                 Require Solution Code
               </label>
             </div>
-            <div class="form-group flex-1">
-              <label class="checkbox-label">
-                <input type="checkbox" name="published" value="1"
-                  <?= $sequence['published'] ? 'checked' : '' ?>>
-                Published
-              </label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Expires At</label>
-            <input type="datetime-local" name="expires_at"
-                   value="<?= $sequence['expires_at'] ? date('Y-m-d\TH:i', strtotime($sequence['expires_at'])) : '' ?>">
           </div>
         </div>
       </div>
@@ -238,10 +264,10 @@ $seqId = (int)$sequence['id'];
       </details>
 
       <!-- Solution (collapsible) -->
-      <details class="card mt-4 seq-section">
+      <details class="card mt-4 seq-section" id="solution-card">
         <summary class="card-header"><h2>Solution</h2><span class="seq-chevron">▾</span></summary>
         <div class="card-body">
-          <p class="small muted" style="margin-bottom:.75rem">Revealed after the Solution Code is entered.</p>
+          <p class="small muted" style="margin-bottom:.75rem">Revealed when the mystery is solved — after the Solution Code (or, for Who-dun-it, a correct accusation).</p>
           <div class="form-group">
             <label>Content</label>
             <div class="quill-editor" id="solution-editor"></div>
@@ -285,11 +311,99 @@ $seqId = (int)$sequence['id'];
           </div>
         </div>
       </details>
+
+      <!-- Survey Link (collapsible) -->
+      <details class="card mt-4 seq-section">
+        <summary class="card-header"><h2>Survey Link</h2><span class="seq-chevron">▾</span></summary>
+        <div class="card-body">
+          <p class="small muted" style="margin-bottom:.75rem">If set, players will see an invitation to take a survey after the solution is revealed. Leave blank to hide it.</p>
+          <div class="form-group">
+            <label for="survey-link-input">Survey URL</label>
+            <input type="url" id="survey-link-input" name="survey_link"
+                   value="<?= e($sequence['survey_link'] ?? '') ?>"
+                   placeholder="https://forms.example.com/your-survey"
+                   style="width:100%">
+          </div>
+        </div>
+      </details>
     </div>
 
     <!-- Theme column -->
     <div class="form-col-sm">
       <div class="sticky-top">
+
+      <?php $isPub = (bool)$sequence['published']; ?>
+      <button type="button" id="publish-btn" class="btn btn-full pub-form <?= $isPub ? 'btn-unpublish' : 'btn-publish' ?>" onclick="togglePublishSeq()">
+        <?= $isPub ? '⏸ Unpublish' : '🚀 Publish' ?>
+      </button>
+      <div class="pub-status <?= $isPub ? 'is-pub' : 'is-draft' ?>">
+        <?php if ($isPub): ?>
+          Published<?= !empty($sequence['published_at']) ? ' &middot; ' . e(formatDate($sequence['published_at'], 'M j, Y')) : '' ?>
+        <?php else: ?>
+          Draft created &middot; <?= e(formatDate($sequence['created_at'], 'M j, Y')) ?>
+        <?php endif; ?>
+      </div>
+      <div class="form-group pub-expires">
+        <label>Expires At</label>
+        <input type="datetime-local" name="expires_at"
+               value="<?= $sequence['expires_at'] ? date('Y-m-d\TH:i', strtotime($sequence['expires_at'])) : '' ?>">
+        <small class="muted">Leave blank for no expiry.</small>
+      </div>
+
+      <?php
+      $health = $health ?? [];
+      $hHasError = (bool)array_filter($health, static fn ($x) => $x['level'] === 'error');
+      $hState = !empty($health) ? ($hHasError ? 'error' : 'warn') : 'ok';
+      $hSummary = count($health) . ' ' . ($hHasError ? 'issue' : 'suggestion') . (count($health) === 1 ? '' : 's');
+      ?>
+      <?php if (empty($health)): ?>
+      <div class="card hc-card hc-ok">
+        <div class="card-header">
+          <h2>🩺 Health Check</h2>
+          <span class="hc-badge hc-badge-ok">Ready to play</span>
+        </div>
+        <div class="card-body">
+          <p class="hc-ok-msg">✓ Everything checks out — this sequence is ready for players.</p>
+        </div>
+      </div>
+      <?php else: ?>
+      <details class="hc hc-<?= $hState ?>"<?= $hHasError ? ' open' : '' ?>>
+        <summary>🩺 Health check &middot; <span class="hc-sum"><?= $hSummary ?></span></summary>
+        <ul class="hc-list">
+          <?php foreach ($health as $h): ?>
+          <li class="hc-<?= e($h['level']) ?>"><?= $h['level'] === 'error' ? '⛔' : '⚠️' ?> <?= e($h['msg']) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      </details>
+      <?php endif; ?>
+      <style>
+      /* Full card for the all-clear state */
+      .hc-card{margin-bottom:1.5rem;border-left:4px solid #4cc9a0}
+      .hc-badge{font-size:.72rem;font-weight:700;padding:.25rem .7rem;border-radius:20px;text-transform:uppercase;letter-spacing:.06em}
+      .hc-badge-ok{background:rgba(76,201,160,.18);color:#4cc9a0}
+      .hc-ok-msg{color:#86e7c1}
+      /* Compact collapsible for issues / suggestions */
+      .hc{margin-bottom:1.25rem;border:1px solid rgba(255,255,255,.12);border-left:3px solid #fbbf24;border-radius:8px;background:rgba(255,255,255,.03)}
+      .hc.hc-error{border-left-color:#ef4444}
+      .hc>summary{cursor:pointer;padding:.5rem .85rem;list-style:none;color:rgba(255,255,255,.78);font-weight:600;font-size:.86rem}
+      .hc>summary::-webkit-details-marker{display:none}
+      .hc-warn .hc-sum{color:#fbbf24}
+      .hc-error .hc-sum{color:#f87171}
+      .hc-list{list-style:none;margin:0;padding:.15rem .85rem .7rem;display:flex;flex-direction:column;gap:.35rem}
+      .hc-list li{font-size:.83rem;line-height:1.35;color:rgba(255,255,255,.8)}
+      .hc-list li.hc-error{color:#fca5a5}
+      </style>
+
+      <a href="<?= url('admin/sequences/' . $seqId . '/whodunnit') ?>" id="whodunnit-setup-btn"
+         class="btn btn-blue btn-full js-leave-guard" style="margin-bottom:1.25rem;<?= ($sequence['type'] ?? '') === 'whodunit' ? '' : 'display:none' ?>">
+        🕵️ Whodunnit Setup
+      </a>
+
+      <a href="<?= url('admin/sequences/' . $seqId . '/interactive') ?>" id="interactive-setup-btn"
+         class="btn btn-blue btn-full js-leave-guard" style="margin-bottom:1.25rem;<?= ($sequence['type'] ?? '') === 'interactive' ? '' : 'display:none' ?>">
+        🎭 Interactive Setup
+      </a>
+
       <div class="card">
         <div class="card-header"><h2>Theme</h2></div>
         <div class="card-body">
@@ -318,16 +432,39 @@ $seqId = (int)$sequence['id'];
             <select name="font_family">
               <?php
               $fonts = [
-                'Inter, sans-serif'        => 'Inter',
-                "'Courier New', monospace" => 'Courier New (Mono)',
-                'Georgia, serif'           => 'Georgia (Serif)',
-                "'Cinzel', serif"          => 'Cinzel (Dramatic)',
-                "'Special Elite', cursive" => 'Special Elite (Typewriter)',
+                'Inter, sans-serif'           => 'Inter',
+                "'Courier New', monospace"    => 'Courier New (Mono)',
+                'Georgia, serif'              => 'Georgia (Serif)',
+                "'Cinzel', serif"             => 'Cinzel (Dramatic)',
+                "'Special Elite', cursive"    => 'Special Elite (Typewriter)',
+                "'Bangers', cursive"          => 'Bangers (Comic)',
+                "'Permanent Marker', cursive" => 'Permanent Marker (Hand-lettered)',
+                "'Knewave', cursive"          => 'Knewave (Bold script)',
+                "'Another Danger', sans-serif"=> 'Another Danger (Display)',
+                "'Brush King', cursive"       => 'Brush King (Brush)',
+                "'Playlist Script', cursive"  => 'Playlist Script (Script)',
               ];
               foreach ($fonts as $val => $label): ?>
               <option value="<?= e($val) ?>" <?= $t['font_family'] === $val ? 'selected' : '' ?>><?= e($label) ?></option>
               <?php endforeach; ?>
             </select>
+          </div>
+          <div class="form-group">
+            <label>Title Font <span class="muted">(the sequence title)</span></label>
+            <select name="title_font">
+              <option value="" <?= empty($t['title_font']) ? 'selected' : '' ?>>— Same as body font —</option>
+              <?php foreach ($fonts as $val => $label): ?>
+              <option value="<?= e($val) ?>" <?= ($t['title_font'] ?? '') === $val ? 'selected' : '' ?>><?= e($label) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="form-group">
+            <?php $titleColorVal = $t['title_color'] ?: ($t['text_color'] ?? '#ffffff'); ?>
+            <label>Title Color <span class="muted">(defaults to the body text colour)</span></label>
+            <div class="color-input-wrap">
+              <input type="color" name="title_color" value="<?= e($titleColorVal) ?>" class="color-swatch" id="title_color">
+              <input type="text" class="color-hex" value="<?= e($titleColorVal) ?>" data-for="title_color">
+            </div>
           </div>
           <div class="form-group">
             <label>Container Width</label>
@@ -423,6 +560,7 @@ const FINALE_CONTENT      = <?= json_encode($sequence['finale_content'] ?? '') ?
 const FINALE_HINT_CONTENT = <?= json_encode($sequence['finale_hint_text'] ?? '') ?>;
 const SOLUTION_CONTENT    = <?= json_encode($sequence['solution_content'] ?? '') ?>;
 const THANKYOU_CONTENT    = <?= json_encode($sequence['thank_you_content'] ?? '') ?>;
+const DESC_CONTENT        = <?= json_encode($sequence['description'] ?? '') ?>;
 const SEQ_ID         = <?= $seqId ?>;
 const CSRF_TOKEN     = <?= json_encode(Security::generateCsrfToken()) ?>;
 
@@ -433,21 +571,86 @@ document.addEventListener('DOMContentLoaded', function() {
   const finaleHintQ = initQuill('#finale-hint-editor', FINALE_HINT_CONTENT);
   const solutionQ   = initQuill('#solution-editor', SOLUTION_CONTENT);
   const thankyouQ   = initQuill('#thankyou-editor', THANKYOU_CONTENT);
+  const descQ       = initQuill('#desc-editor', DESC_CONTENT);
 
-  document.getElementById('sequence-form').addEventListener('submit', function() {
+  const seqForm = document.getElementById('sequence-form');
+  seqForm.addEventListener('submit', function() {
+    document.getElementById('desc-content').value        = descQ.root.innerHTML;
     document.getElementById('intro-content').value       = introQ.root.innerHTML;
     document.getElementById('intro-hint-content').value  = introHintQ.root.innerHTML;
     document.getElementById('finale-content').value      = finaleQ.root.innerHTML;
     document.getElementById('finale-hint-content').value = finaleHintQ.root.innerHTML;
     document.getElementById('solution-content').value    = solutionQ.root.innerHTML;
     document.getElementById('thankyou-content').value    = thankyouQ.root.innerHTML;
+    window._seqDirty = false; // saving — don't warn
   });
 
   setupLocalPreview('intro-file',       'intro-preview',       'intro-upload-area');
   setupLocalPreview('intro-hint-file',  'intro-hint-preview',  'intro-hint-upload-area');
   setupLocalPreview('finale-hint-file', 'finale-hint-preview', 'finale-hint-upload-area');
   setupLocalPreview('solution-file',    'solution-preview',    'solution-upload-area');
+
+  // ── Unsaved-changes guard ──
+  // Mark the form dirty on a real edit, then warn before following links that leave
+  // the page without saving (Manage Clues, Whodunnit Setup). We arm the tracker only
+  // after init settles, and ignore programmatic Quill changes (initQuill setting the
+  // editors' starting content fires text-change), so it never fires with no edits.
+  window._seqDirty = false;
+  let _dirtyArmed = false;
+  const markDirty = function () { if (_dirtyArmed) window._seqDirty = true; };
+  seqForm.addEventListener('input', markDirty);
+  seqForm.addEventListener('change', markDirty);
+  [introQ, introHintQ, finaleQ, finaleHintQ, solutionQ, thankyouQ, descQ].forEach(function (q) {
+    if (q) q.on('text-change', function (delta, oldDelta, source) { if (source === 'user') markDirty(); });
+  });
+  setTimeout(function () { _dirtyArmed = true; }, 600);
+  document.querySelectorAll('.js-leave-guard').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      if (window._seqDirty &&
+          !confirm('You have unsaved changes to this sequence. Leave without saving them?')) {
+        e.preventDefault();
+      }
+    });
+  });
+
+  seqTypeToggle();
+  const _seqType = document.getElementById('seq-type');
+  if (_seqType) _seqType.addEventListener('change', seqTypeToggle);
 });
+
+// For Who-dun-it sequences the accusation replaces the Solution Code, so hide the
+// code fields and surface the dedicated Whodunnit Setup button.
+function seqTypeToggle() {
+  const type = document.getElementById('seq-type');
+  if (!type) return;
+  const isWd = (type.value === 'whodunit');
+  const isInteractive = (type.value === 'interactive');
+  const show = function (id, on) { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
+  // Who-dun-it and Interactive replace the Solution Code with an accusation/vote,
+  // so they have no Solution Code — that gate is the accusation itself.
+  show('solcode-field', !isWd && !isInteractive);
+  show('reqcode-row', !isWd && !isInteractive);
+  show('whodunnit-setup-btn', isWd);
+  show('interactive-setup-btn', isInteractive);
+  // The Game Board Theme picker is only relevant for the gameboard type.
+  show('gb-theme-row', type.value === 'gameboard');
+}
+
+// Publish toggle — uses fetch (the control sits inside the main sequence form,
+// so it can't be its own nested <form>).
+function togglePublishSeq() {
+  const btn = document.getElementById('publish-btn');
+  const csrf = document.querySelector('input[name="csrf_token"]')?.value
+            || (typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  fetch('<?= url('admin/sequences/' . $seqId . '/publish') ?>', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ csrf_token: csrf, redirect_to: 'edit' }),
+  }).then(function () { location.reload(); })
+    .catch(function () { location.reload(); });
+}
 
 function resetStats(url) {
   if (!confirm('Reset views, completions and average time for this sequence? This cannot be undone.')) return;

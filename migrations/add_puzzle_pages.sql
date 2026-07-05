@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS puzzle_pages (
     id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
     clue_id      INT UNSIGNED NULL,
     slug         VARCHAR(120) NOT NULL,
-    puzzle_type  ENUM('order','caesar','phone','access','elim') NOT NULL DEFAULT 'order',
+    puzzle_type  ENUM('order','caesar','phone','access','elim','wordsearch','match','hotspot') NOT NULL DEFAULT 'order',
     title        VARCHAR(500) NOT NULL DEFAULT '',
     prompt       TEXT NULL,
     data_json    TEXT NULL,
@@ -27,4 +27,4 @@ CREATE TABLE IF NOT EXISTS puzzle_pages (
 -- Idempotent: bring databases that ran an earlier version of this migration
 -- up to the full set of puzzle types. Safe to re-run; no-op on fresh installs.
 ALTER TABLE puzzle_pages
-    MODIFY COLUMN puzzle_type ENUM('order','caesar','phone','access','elim') NOT NULL DEFAULT 'order';
+    MODIFY COLUMN puzzle_type ENUM('order','caesar','phone','access','elim','wordsearch','match','hotspot') NOT NULL DEFAULT 'order';

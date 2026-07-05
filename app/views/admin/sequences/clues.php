@@ -2,6 +2,8 @@
 $pageTitle = 'Clues: ' . ($sequence['title'] ?? '');
 $activeNav = 'sequences';
 $seqId     = (int)$sequence['id'];
+$isWhodunit = ($sequence['type'] ?? '') === 'whodunit';
+$isInteractive = ($sequence['type'] ?? '') === 'interactive';
 ob_start();
 ?>
 
@@ -9,6 +11,10 @@ ob_start();
   <a href="<?= url('admin/sequences') ?>">Sequences</a> /
   <a href="<?= url('admin/sequences/' . $seqId . '/edit') ?>"><?= e($sequence['title']) ?></a> /
   Clues
+  <a href="<?= url('admin/sequences/' . $seqId . '/overview') ?>" class="btn btn-ghost btn-xs" style="margin-left:.6rem">🗺 Overview</a>
+  <?php if ($isInteractive): ?>
+  <a href="<?= url('admin/sequences/' . $seqId . '/suspect-clues') ?>" class="btn btn-blue btn-xs" style="margin-left:.4rem">🎭 Suspect Clues</a>
+  <?php endif; ?>
 </div>
 
 <div class="clues-layout">
@@ -47,13 +53,15 @@ ob_start();
           <div class="clue-meta">
             <span class="clue-num"><?= $i + 1 ?></span>
             <strong><?= $clue['title'] ? e($clue['title']) : 'Clue ' . ($i + 1) ?></strong>
+            <?php if (!$isWhodunit): ?>
             <span class="clue-code muted">Code: <code><?= e($clue['access_code']) ?></code></span>
+            <?php endif; ?>
           </div>
           <div class="clue-actions">
             <?php if ($clue['file_type']): ?>
               <span class="media-badge" title="Has media"><?= mediaIcon($clue['file_type']) ?></span>
             <?php endif; ?>
-            <?php if ($clue['hint_text'] || $clue['hint_file_path']): ?>
+            <?php if (trim(strip_tags($clue['hint_text'] ?? '')) || $clue['hint_file_path']): ?>
               <span class="media-badge" title="Has hint">&#128161;</span>
             <?php endif; ?>
             <?php if (isset($pages[(int)$clue['id']])): ?>
@@ -115,20 +123,23 @@ ob_start();
             <input type="hidden" name="content" id="clue-content-hidden">
           </div>
           <div class="form-group">
-            <label>Reward <span class="muted">(rich-text reward shown after the tile is unlocked)</span></label>
+            <label>Reward <span class="muted">(the discovery banked in the Evidence Locker once this clue is unlocked)</span></label>
             <div class="quill-editor" id="clue-reward-editor"></div>
             <input type="hidden" name="reward_content" id="clue-reward-hidden">
           </div>
-          <div class="form-group">
-            <label>Access Code <span class="req">*</span></label>
-            <input type="text" name="access_code" id="clue-code" class="code-upper" required placeholder="FRAGMENT1">
+          <div class="form-group"<?= $isWhodunit ? ' style="display:none"' : '' ?>>
+            <label>Access Code <?php if (!$isWhodunit): ?><span class="req">*</span><?php endif; ?></label>
+            <input type="text" name="access_code" id="clue-code" class="code-upper" <?= $isWhodunit ? '' : 'required' ?> placeholder="FRAGMENT1">
             <small>User enters this to unlock the next clue.</small>
           </div>
-          <div class="form-group">
+          <div class="form-group"<?= $isWhodunit ? ' style="display:none"' : '' ?>>
             <label>Gate Instruction</label>
             <input type="text" name="clue_instruction" id="clue-instruction"
                    placeholder="Shown above this clue's code box. Leave blank for none.">
           </div>
+          <?php if ($isWhodunit): ?>
+          <p class="small muted" style="margin:-.25rem 0 1rem">Who-dun-it clues are evidence shown to every player — they don&rsquo;t use access codes.</p>
+          <?php endif; ?>
 
           <!-- Clue file -->
           <div class="form-group">
@@ -490,22 +501,34 @@ function openEditClue(btn) {
   window.rewardQ.root.innerHTML = data.reward_content || '';
   window.hintQ.root.innerHTML   = data.hint_text || '';
 
-  if (data.file_path) {
-    const wrap = document.getElementById('clue-current-media');
-    wrap.innerHTML = buildAdminMediaThumb(data.file_type, UPLOAD_BASE + '/' + data.file_path, data.original_filename)
-      + ' <button type="button" class="btn btn-danger btn-xs" onclick="deleteClueMedia(\'clue\')">Remove</button>';
-    wrap.classList.remove('hidden');
-    document.getElementById('clue-upload-area').classList.add('hidden');
-  }
-  if (data.hint_file_path) {
-    const wrap = document.getElementById('hint-current-media');
-    wrap.innerHTML = buildAdminMediaThumb(data.hint_file_type, UPLOAD_BASE + '/' + data.hint_file_path, data.hint_original_filename)
-      + ' <button type="button" class="btn btn-danger btn-xs" onclick="deleteClueMedia(\'hint\')">Remove</button>';
-    wrap.classList.remove('hidden');
-    document.getElementById('hint-upload-area').classList.add('hidden');
-  }
+  setClueMedia('clue', data.file_path, data.file_type, data.original_filename,
+               'clue-current-media', 'clue-upload-area', 'clue-file', 'clue-file-preview');
+  setClueMedia('hint', data.hint_file_path, data.hint_file_type, data.hint_original_filename,
+               'hint-current-media', 'hint-upload-area', 'hint-file', 'hint-file-preview');
 
   document.getElementById('clue-form-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Show the clue's existing media (or reset to a clean upload area when it has none),
+// so switching between clues never carries media over from a previously-edited one.
+function setClueMedia(slot, path, type, name, wrapId, areaId, inputId, previewId) {
+  const wrap = document.getElementById(wrapId);
+  const area = document.getElementById(areaId);
+  const preview = document.getElementById(previewId);
+  if (path) {
+    wrap.innerHTML = buildAdminMediaThumb(type, UPLOAD_BASE + '/' + path, name)
+      + ' <button type="button" class="btn btn-danger btn-xs" onclick="deleteClueMedia(\'' + slot + '\')">Remove</button>';
+    wrap.classList.remove('hidden');
+    area.classList.add('hidden');
+  } else {
+    wrap.innerHTML = '';
+    wrap.classList.add('hidden');
+    area.classList.remove('hidden');
+  }
+  // Clear any locally-chosen-but-unsaved file selection/preview.
+  const input = document.getElementById(inputId);
+  if (input) input.value = '';
+  if (preview) { preview.innerHTML = ''; preview.classList.add('hidden'); }
 }
 
 function buildAdminMediaThumb(type, url, name) {

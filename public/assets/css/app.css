@@ -1,3 +1,25 @@
+/* ── Custom (non-Google) theme fonts ──────────────────────────────────────────
+   Drop the matching font files into /public/assets/fonts/. If a file is missing,
+   the browser silently falls back to the next font in the stack. */
+@font-face {
+  font-family: 'Another Danger';
+  src: url('../fonts/another-danger.woff2') format('woff2'),
+       url('../fonts/another-danger.woff')  format('woff');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Brush King';
+  src: url('../fonts/brush-king.woff2') format('woff2'),
+       url('../fonts/brush-king.woff')  format('woff');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Playlist Script';
+  src: url('../fonts/playlist-script.woff2') format('woff2'),
+       url('../fonts/playlist-script.woff')  format('woff');
+  font-display: swap;
+}
+
 /* ── Public sequence page ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }
@@ -46,6 +68,8 @@ textarea:focus-visible,
   outline: 3px solid #ffd166;
   outline-offset: 2px;
 }
+/* Skip-link target receives focus programmatically — no need for a big ring */
+.seq-main:focus, .seq-main:focus-visible { outline: none; }
 /* Respect the OS "reduce motion" preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -54,6 +78,290 @@ textarea:focus-visible,
     transition-duration: .001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ── View Mystery Summary button (solution PDF) ──────────────────────────── */
+.btn-summary {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .85rem 1.6rem; border-radius: 12px;
+  background: var(--btn-color, #6c63ff); color: var(--btn-text-color, #fff);
+  font-size: 1rem; font-weight: 600; text-decoration: none;
+  border: none; cursor: pointer; transition: filter .15s, transform .1s;
+}
+.btn-summary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+
+/* ── Live elapsed timer (header) ─────────────────────────────────────────── */
+.seq-timer {
+  flex: none;
+  font-family: 'Courier New', monospace;
+  font-size: .9rem; font-weight: 700;
+  color: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px; padding: .2rem .55rem;
+  letter-spacing: .04em;
+}
+
+/* ── Evidence Locker ─────────────────────────────────────────────────────── */
+.ev-modal {
+  position: fixed; inset: 0; z-index: 800;
+  background: rgba(0,0,0,.78);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.ev-modal.hidden { display: none; }
+.ev-box {
+  /* dark cork/evidence board */
+  background: #232019;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.04), transparent 55%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,.10) 0 2px, transparent 2px 10px);
+  color: #e6e6ef;
+  border: 1px solid rgba(0,0,0,.55);
+  border-radius: 8px;
+  width: 100%; max-width: 680px; max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,.75);
+  overflow: hidden;
+}
+.ev-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .8rem 1.1rem; flex-shrink: 0;
+  background: #7f1d1d; color: #fde8e8;
+  border-bottom: 3px solid #450a0a;
+}
+.ev-head h2 {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 1rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+}
+.ev-close {
+  background: none; border: none; color: #fde8e8;
+  font-size: 1.25rem; line-height: 1; cursor: pointer;
+  padding: .2rem .55rem; border-radius: 6px;
+}
+.ev-close:hover { color: #fff; background: rgba(0,0,0,.25); }
+.ev-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1.6rem 1.35rem; display: flex; flex-direction: column; gap: 1.6rem; }
+
+/* ── Evidence cards: kraft-paper exhibits ── */
+.ev-card {
+  position: relative;
+  background: #efe7d2;
+  background-image: linear-gradient(180deg, #f4eddb 0, #e7dbbd 100%);
+  color: #2b2417;
+  border: 1px solid #b8a273;
+  border-radius: 3px;
+  padding: 1.55rem 1.2rem 1.2rem;
+  box-shadow: 0 7px 18px rgba(0,0,0,.5);
+}
+/* a strip of tape pinning it to the board */
+.ev-card::before {
+  content: ''; position: absolute; top: -11px; left: 50%;
+  transform: translateX(-50%) rotate(-1.5deg);
+  width: 116px; height: 22px;
+  background: rgba(214,203,160,.6);
+  border: 1px dashed rgba(120,90,40,.4);
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+/* red evidence tag, top-right */
+.ev-tag {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; align-items: center; gap: .4rem;
+  background: #fff; border: 1.5px solid #b3261e; border-radius: 4px;
+  padding: .15rem .5rem; transform: rotate(2.5deg);
+  box-shadow: 0 2px 5px rgba(0,0,0,.3);
+}
+.ev-tag-no { font-family: 'Special Elite', monospace; font-weight: 700; color: #b3261e; font-size: 1.05rem; line-height: 1; }
+.ev-tag-text { font-family: 'Special Elite', monospace; font-size: .58rem; letter-spacing: .14em; color: #b3261e; }
+.ev-card-title {
+  font-family: 'Special Elite', 'Cinzel', serif; font-size: 1.02rem; font-weight: 700;
+  color: #241d10; margin-bottom: .55rem; padding-right: 5rem;
+  border-bottom: 1px solid rgba(120,90,40,.4); padding-bottom: .4rem;
+}
+.ev-card-body, .ev-card-body .rich-content, .ev-card-body .rich-content * { color: #34291a !important; }
+.ev-card-body .rich-content { line-height: 1.55; }
+.ev-card-body img, .ev-card-body video {
+  max-width: 100%; border-radius: 4px; border: 1px solid #b8a273; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+.ev-card-body a { color: #8a3b12; }
+.ev-sep { border: none; border-top: 1px dashed rgba(120,90,40,.5); margin: 1rem 0; }
+html.ev-open { overflow: hidden; }
+
+/* ── Solution media pop-up ─────────────────────────────────────────────────── */
+.sol-modal {
+  position: fixed; inset: 0; z-index: 820; background: rgba(0,0,0,.8);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.sol-modal.hidden { display: none; }
+.sol-box {
+  background: #14141f; color: #e6e6ef;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+  width: 100%; max-width: 760px; max-height: 90vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,.7);
+}
+.sol-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 1.25rem; }
+.sol-body .media-frame, .sol-body figure { margin: 0; }
+.sol-body .media-img { width: 100%; height: auto; border-radius: 8px; }
+.sol-body .pdf-viewer iframe { width: 100%; height: 68vh; border: none; border-radius: 8px; }
+.sol-foot {
+  flex-shrink: 0; padding: .9rem; display: flex; justify-content: center;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+/* ── Sound & ambiance control ────────────────────────────────────────────── */
+.snd-ctrl {
+  position: fixed; bottom: 1rem; right: 1rem; z-index: 500;
+  display: flex; gap: .4rem;
+}
+.snd-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(20,20,31,.82); color: #fff;
+  font-size: 1.05rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  transition: transform .12s, border-color .15s, opacity .15s;
+}
+.snd-btn:hover { border-color: rgba(255,255,255,.5); transform: translateY(-1px); }
+.snd-btn.off { opacity: .45; }
+@media print { .snd-ctrl { display: none !important; } }
+
+/* ── Completion result / shareable card ──────────────────────────────────── */
+.result-share { margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+/* Holds the card and, once rendered, its PNG snapshot (which replaces the card). */
+.rc-photo-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 460px; }
+/* PNG snapshot of the card. Hidden until ready, then shown in the card's place so a
+   long-press gives the actual image with the native Save to Photos / Share menu. */
+.rc-photo { display: none; width: 100%; max-width: 460px; height: auto; border-radius: 16px; -webkit-touch-callout: default; }
+.rc-photo.ready { display: block; }
+.result-card {
+  width: 100%; max-width: 460px;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255,209,102,.22), transparent 55%),
+    linear-gradient(160deg, #1b1430 0%, #2a1d44 48%, #14101f 100%);
+  border: 2px solid #d9a93b;
+  border-radius: 16px;
+  padding: 5.3rem 1.7rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0,0,0,.55);
+  position: relative; overflow: hidden;
+  color: #f3eedf;
+}
+/* faint corner glow */
+.result-card::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 24%, rgba(255,209,102,.10), transparent 38%),
+    radial-gradient(circle at 88% 84%, rgba(108,99,255,.20), transparent 42%);
+}
+/* inset certificate frame */
+.result-card::after {
+  content: ''; position: absolute; top: 9px; right: 9px; bottom: 9px; left: 9px;
+  pointer-events: none; border: 1px solid rgba(217,169,59,.45); border-radius: 11px;
+}
+/* gold detective seal */
+.rc-seal {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  width: 58px; height: 58px; border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #ffe9a8, #e7b84e 55%, #b8862a 100%);
+  border: 3px solid #14101f;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.55rem; z-index: 2;
+}
+.rc-badge {
+  position: relative; display: inline-block; margin: 0 0 .85rem;
+  background: linear-gradient(180deg, #ffd56b, #dca72c);
+  color: #2a1d05; font-family: 'Special Elite', 'Cinzel', serif;
+  font-size: .8rem; font-weight: 700; letter-spacing: .26em;
+  padding: .35rem 1rem .35rem 1.26rem; border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+}
+.rc-title {
+  position: relative; font-family: 'Cinzel', 'Special Elite', serif;
+  font-size: 1.7rem; font-weight: 700; color: #fff; line-height: 1.15;
+  margin-bottom: .35rem; text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+.rc-sub {
+  position: relative; font-family: 'Cinzel', 'Special Elite', serif;
+  font-size: 1.05rem; font-weight: 700; letter-spacing: .02em;
+  color: #ffd166; margin-bottom: 1rem;
+}
+.rc-rule {
+  position: relative; width: 68%; margin: 0 auto 1rem; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(217,169,59,.7), transparent);
+}
+.rc-time { position: relative; font-size: 1.05rem; color: rgba(255,255,255,.9); }
+.rc-time strong { color: #ffd166; font-size: 1.3rem; font-weight: 800; }
+.rc-stats { position: relative; margin-top: .85rem; }
+.rc-nohints {
+  display: inline-block; color: #9af0cf;
+  background: linear-gradient(180deg, rgba(76,201,160,.28), rgba(76,201,160,.12));
+  border: 1px solid rgba(76,201,160,.55); border-radius: 20px;
+  font-size: .85rem; font-weight: 700; padding: .4rem 1rem; letter-spacing: .02em;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.rc-hintcount { display: inline-block; font-size: .85rem; color: rgba(255,255,255,.65); }
+.rc-accuse {
+  position: relative; display: inline-block; margin-top: .6rem;
+  background: linear-gradient(180deg, rgba(108,99,255,.3), rgba(108,99,255,.14));
+  color: #d3ccff; border: 1px solid rgba(108,99,255,.55); border-radius: 20px;
+  font-size: .85rem; font-weight: 700; padding: .35rem .95rem; letter-spacing: .02em;
+}
+.rc-issuer {
+  position: relative; margin-top: 1.3rem; color: rgba(217,169,59,.7);
+  font-size: .8rem; letter-spacing: .5em;
+}
+.rc-master {
+  position: relative; margin-top: .7rem;
+  font-family: 'Cinzel', 'Special Elite', serif;
+  font-size: .9rem; line-height: 1.5; letter-spacing: .02em;
+  color: rgba(255,233,168,.9);
+}
+.rc-master .rc-rank {
+  display: inline-block; margin-top: .2rem;
+  font-size: 1.2rem; font-weight: 700; letter-spacing: .12em;
+  color: #ffd166; text-shadow: 0 1px 8px rgba(0,0,0,.4);
+}
+.result-actions { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+.rc-thankyou {
+  width: 100%; max-width: 460px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px; padding: 1.25rem 1.4rem; line-height: 1.6; text-align: center;
+}
+.rc-reveal { animation: rcRise .5s ease both; }
+@keyframes rcRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* QR code shown in the Thank-you pop-up and the static thank-you below the buttons */
+.ty-qr { display: flex; flex-direction: column; align-items: center; gap: .45rem; margin-top: 1.25rem; }
+.ty-qr-box { background: #fff; padding: 8px; border-radius: 8px; line-height: 0; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.ty-qr-box img, .ty-qr-box canvas { display: block; }
+.ty-qr-cap { font-size: .82rem; font-weight: 600; color: #ffd166; text-decoration: none; }
+.ty-qr-cap:hover { text-decoration: underline; }
+.rc-promo { text-align: center; margin-top: 1.1rem; }
+.rc-survey { font-size: 1.1rem; font-weight: 700; color: #ffd166; line-height: 1.4; margin: 0 0 .55rem; }
+.rc-link { font-size: 1.1rem; font-weight: 700; color: #ffd166; text-decoration: none; line-height: 1.4; }
+.rc-link:hover { text-decoration: underline; }
+
+/* ── Admin play-test panel ───────────────────────────────────────────────── */
+.pt-panel {
+  border: 1px dashed rgba(255,209,102,.6);
+  background: rgba(255,209,102,.08);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-size: .9rem;
+}
+.pt-panel > summary {
+  cursor: pointer; padding: .65rem 1rem;
+  color: #ffd166; font-weight: 600; list-style: none;
+}
+.pt-panel > summary::-webkit-details-marker { display: none; }
+.pt-body { padding: 0 1rem 1rem; }
+.pt-note { color: rgba(255,255,255,.6); margin-bottom: .6rem; font-size: .82rem; }
+.pt-codes { list-style: none; display: flex; flex-direction: column; gap: .35rem; }
+.pt-codes code {
+  background: rgba(0,0,0,.35); padding: .15rem .5rem; border-radius: 5px;
+  font-family: 'Courier New', monospace; color: #ffe9a8; letter-spacing: .05em;
 }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */
@@ -119,6 +427,458 @@ a.btn-reset { text-decoration: none; display: inline-block; }
 .gate-card h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: .5rem; }
 .gate-sub { color: rgba(255,255,255,.5); font-size: .9rem; margin-bottom: 1.5rem; }
 
+/* ── Whodunit accusation panel — kraft case-file look ──────────────────────── */
+.accusation-gate {
+  position: relative;
+  background: #efe7d2;
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(255,255,255,.55), transparent 60%),
+    radial-gradient(circle at 86% 82%, rgba(120,90,40,.18), transparent 55%);
+  border: 2px solid #c9b487 !important;
+  color: #2b2417;
+  box-shadow: 0 14px 32px rgba(0,0,0,.45);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+/* "OFFICIAL" red rubber stamp tilted in the corner */
+.accusation-gate::before {
+  content: 'OFFICIAL'; position: absolute; top: 12px; right: 14px;
+  background: rgba(255,255,255,.85); color: #b3261e;
+  border: 2px solid #b3261e; border-radius: 4px;
+  padding: .2rem .55rem;
+  font-family: 'Special Elite', monospace; font-size: .62rem; letter-spacing: .18em;
+  transform: rotate(4deg);
+  pointer-events: none;
+}
+.accusation-gate .gate-icon { filter: none; }
+.accusation-gate h2 {
+  font-family: 'Special Elite', 'Cinzel', serif;
+  color: #2a1d05; font-size: 1.5rem; letter-spacing: .02em;
+}
+.accusation-gate .gate-sub { color: #5a4a2a; font-size: .9rem; }
+
+.accusation-form { margin-top: 1.25rem; text-align: left; max-width: 460px; margin-left: auto; margin-right: auto; }
+
+/* Each category is a slip of kraft paper with a dashed sepia border. */
+.acc-cat {
+  position: relative;
+  background: #f4ecd8;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 23px, rgba(160,120,60,.12) 24px);
+  border: 1.5px dashed #9a7e4a;
+  border-radius: 6px;
+  padding: .95rem 1.1rem 1rem;
+  margin-bottom: .85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
+}
+.acc-cat.acc-correct {
+  border: 2px solid #1c7c43;
+  background-color: #e9f3e0;
+}
+.acc-cat.acc-wrong {
+  border: 2px solid #b3261e;
+  background-color: #f4e2dc;
+}
+
+.acc-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-weight: 700; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase;
+  color: #2a1d05; margin-bottom: .55rem;
+}
+
+/* Bigger, more visible stamp marks */
+.acc-mark {
+  font-size: 1.15rem; font-weight: 800;
+  width: 1.6rem; height: 1.6rem; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid currentColor;
+}
+.acc-mark.ok { color: #1c7c43; background: rgba(28,124,67,.12); }
+.acc-mark.no { color: #b3261e; background: rgba(179,38,30,.12); }
+
+/* Form-style dropdown on the kraft paper */
+.acc-select {
+  width: 100%; padding: .75rem .9rem; border-radius: 4px;
+  border: 1.5px solid #8a744a;
+  background: #fffaf0;
+  color: #2b2417; font-size: 1rem; font-weight: 600;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+}
+.acc-select:hover { border-color: #6b5836; box-shadow: 0 0 0 3px rgba(107,88,54,.18); }
+.acc-select option {
+  background: #fffaf0; color: #2b2417; font-weight: 600;
+  font-family: 'Special Elite', 'Courier New', monospace;
+}
+.acc-select:disabled { opacity: .65; cursor: not-allowed; }
+
+/* Red "rubber stamp" submit button to match the OFFICIAL aesthetic. */
+.acc-submit {
+  width: 100%; margin-top: .9rem !important;
+  background: #b3261e !important; color: #fde8e8 !important;
+  border: 2px solid #7a1a13 !important;
+  font-family: 'Special Elite', 'Courier New', monospace !important;
+  letter-spacing: .08em; font-weight: 700;
+  padding: .9rem 1.2rem;
+  box-shadow: 0 5px 16px rgba(179,38,30,.4);
+}
+.acc-submit:hover { filter: brightness(1.08); }
+
+.acc-attempts {
+  text-align: center; margin-top: .7rem;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  color: #5a4a2a !important; font-size: .8rem;
+}
+
+/* Override the generic .gate-sub colour for the error inside the kraft card */
+.accusation-gate .code-error { color: #7a1a13; background: rgba(179,38,30,.08); border-color: #b3261e; }
+
+/* ── Whodunit: character card grids ────────────────────────────────────────── */
+.wd-cat { margin: 1.5rem 0; }
+.wd-cat-title {
+  font-family: 'Special Elite', 'Cinzel', serif; font-size: 1.15rem; letter-spacing: .04em;
+  margin-bottom: .8rem; color: var(--text-color); text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom: .35rem;
+}
+.wd-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .9rem; }
+.wd-card {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;
+  transition: transform .15s, border-color .15s;
+}
+.wd-card:hover { transform: translateY(-3px); border-color: rgba(108,99,255,.5); }
+.wd-card-clickable { cursor: zoom-in; }
+.wd-card-clickable:hover .wd-card-img img { transform: scale(1.04); }
+.wd-card-clickable .wd-card-img img { transition: transform .2s; }
+.wd-card-img { aspect-ratio: 4 / 3; background: #0e0e18; display: flex; align-items: center; justify-content: center; }
+.wd-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.wd-card-noimg { font-size: 2rem; opacity: .35; }
+.wd-card-name { font-weight: 600; font-size: .92rem; padding: .55rem .65rem .2rem; }
+.wd-card-desc { font-size: .78rem; color: rgba(255,255,255,.6); padding: 0 .65rem .6rem; line-height: 1.35; }
+
+/* ── Whodunit: evidence as case files (distinct from sequential clue cards) ── */
+.wd-evidence { margin: 1.6rem 0; }
+.wd-evidence .content-card.clue-card {
+  background: #efe7d2;
+  background-image: linear-gradient(180deg, #f3ecd9 0, #e7dcc0 100%);
+  color: #2b2417; border: 1px solid #b8a273; border-left: 7px solid #8a744a;
+  border-radius: 3px 10px 10px 3px; box-shadow: 0 10px 22px rgba(0,0,0,.4);
+  position: relative; overflow: hidden;
+}
+/* manila folder tab */
+.wd-evidence .content-card.clue-card::before {
+  content: ''; position: absolute; top: -1px; left: 26px; width: 92px; height: 12px;
+  background: #d8c7a0; border: 1px solid #b8a273; border-bottom: none; border-radius: 6px 6px 0 0;
+}
+/* "EVIDENCE" stamp */
+.wd-evidence .content-card.clue-card::after {
+  content: 'EVIDENCE'; position: absolute; top: 16px; right: -34px;
+  transform: rotate(14deg); background: rgba(179,38,30,.0);
+  color: rgba(179,38,30,.5); border: 2px solid rgba(179,38,30,.45);
+  font-family: 'Special Elite', monospace; font-weight: 700; letter-spacing: .12em;
+  font-size: .8rem; padding: .15rem 2.6rem;
+}
+.wd-evidence .card-accent-bar { display: none; }
+.wd-evidence .card-label {
+  display: inline-block; margin-top: .35rem;
+  font-family: 'Special Elite', monospace; text-transform: uppercase; letter-spacing: .12em;
+  font-size: .72rem; color: #6b5836; background: #ddcfa8; border: 1px solid #c2ad7e;
+  padding: .15rem .6rem; border-radius: 3px;
+}
+.wd-evidence .clue-title { color: #241d10; font-family: 'Special Elite', 'Cinzel', serif; }
+.wd-evidence .rich-content,
+.wd-evidence .rich-content * { color: #34291a !important; }
+.wd-evidence .media-caption { color: #6b5836; }
+
+/* ── Whodunit: "Case Closed" verdict reveal ────────────────────────────────── */
+.wd-verdict-lead { color: rgba(255,255,255,.8); margin-bottom: 1rem; }
+.wd-verdict { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.25rem; }
+.wd-verdict-item {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: .6rem; width: 130px;
+}
+.wd-verdict-img { width: 100%; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; background: #0e0e18; display: flex; align-items: center; justify-content: center; margin-bottom: .5rem; }
+.wd-verdict-img img { width: 100%; height: 100%; object-fit: cover; }
+.wd-verdict-noimg { font-size: 1.8rem; opacity: .4; }
+.wd-verdict-cat { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); }
+.wd-verdict-name { font-weight: 700; font-size: .95rem; color: #fff; }
+
+/* ── Whodunit: pop-out detective's notepad ─────────────────────────────────── */
+.wd-pad-toggle {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  z-index: 820; display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  background: #c9b487; color: #3b2f1a; border: none;
+  border-radius: 12px 0 0 12px; padding: .85rem .55rem; cursor: pointer;
+  box-shadow: -4px 4px 14px rgba(0,0,0,.45); font-weight: 700; font-size: .72rem;
+  writing-mode: vertical-rl; text-orientation: mixed;
+}
+.wd-pad-toggle-icon { writing-mode: horizontal-tb; font-size: 1.2rem; }
+.wd-pad-toggle:hover { filter: brightness(1.06); }
+html.wd-pad-open .wd-pad-toggle { display: none; }
+.wd-pad {
+  position: fixed; top: 0; right: 0;
+  /* Shrink to its actual content instead of filling the viewport, but still cap
+     so it never overflows the screen. */
+  width: max-content; min-width: 280px; max-width: 94vw;
+  height: auto; max-height: 100vh;
+  z-index: 840; background: #d8c7a0; color: #2b2417;
+  box-shadow: -10px 0 40px rgba(0,0,0,.55);
+  transform: translateX(100%); transition: transform .28s ease;
+  display: flex; flex-direction: column;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 25px, rgba(120,90,40,.18) 26px);
+}
+.wd-pad.open { transform: translateX(0); }
+.wd-pad-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.1rem; background: #6b5836; color: #f4ecd8; flex-shrink: 0;
+}
+.wd-pad-head h2 { font-family: 'Special Elite', serif; font-size: 1.05rem; }
+.wd-pad-close { background: none; border: none; color: #f4ecd8; font-size: 1.2rem; cursor: pointer; padding: .2rem .5rem; border-radius: 6px; }
+.wd-pad-close:hover { background: rgba(255,255,255,.15); }
+.wd-pad-body { overflow-y: auto; padding: 1rem 1.1rem; }
+.wd-pad-hint { font-size: .78rem; color: #6b5836; margin-bottom: .8rem; }
+.wd-pad-hint .wd-leg { font-weight: 700; white-space: nowrap; margin-right: .4rem; }
+.wd-pad-hint .wd-leg-no { color: #b3261e; }
+.wd-pad-hint .wd-leg-yes { color: #1c7c43; }
+
+/* Logic grid */
+.wd-grid-wrap { overflow: auto; -webkit-overflow-scrolling: touch; padding-bottom: .5rem; }
+.wd-grid { border-collapse: collapse; background: #fbf7ec; }
+.wd-grid th, .wd-grid td { border: 1px solid #b8a273; padding: 0; }
+.wd-grid-corner { background: transparent; border-color: transparent !important; }
+/* Column header height is driven by the longest label — no fixed cap. */
+.wd-grid-colh {
+  vertical-align: bottom; width: 36px; background: #ece1c4;
+}
+.wd-grid-colh span {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  display: inline-block; padding: .2rem .4rem .2rem .3rem; font-size: .78rem; font-weight: 600;
+  color: #3a3018; white-space: nowrap;
+}
+/* Match the rotated column labels' typography. Compact vertical padding with a
+   roomier right gutter so text never kisses the grid line.
+   !important beats the generic `.wd-grid th { padding: 0 }`. */
+.wd-grid-rowh {
+  text-align: right;
+  padding: .2rem !important;
+  min-height: 26px;
+  font-size: .78rem; font-weight: 600; line-height: 1.2;
+  color: #3a3018; background: #ece1c4;
+  max-width: 180px; white-space: normal; word-break: break-word;
+}
+.wd-grid-cell { width: 36px; height: 26px; text-align: center; }
+.wd-grid-blank { background: #d8cdb0; }
+/* thicker rules between categories */
+.wd-grid .cat-edge { border-left: 2.5px solid #6b5836; }
+.wd-grid .row-edge { border-top: 2.5px solid #6b5836; }
+.wd-gcell {
+  width: 100%; height: 26px; border: none; background: transparent; cursor: pointer;
+  font-size: 1.05rem; font-weight: 800; line-height: 1; color: #2b2417; padding: 0;
+}
+.wd-gcell:hover { background: rgba(107,88,54,.12); }
+.wd-gcell.is-no  { color: #b3261e; }
+.wd-gcell.is-yes { color: #1c7c43; }
+/* single-category fallback */
+.wd-pad-cat { margin-bottom: 1.1rem; }
+.wd-pad-cat h3 {
+  font-family: 'Special Elite', serif; font-size: .95rem; text-transform: uppercase;
+  letter-spacing: .03em; color: #4a3c22; border-bottom: 2px solid #b09a6a; padding-bottom: .2rem; margin-bottom: .35rem;
+}
+.wd-pad-row { display: flex; align-items: center; justify-content: space-between; padding: .3rem 0; gap: .5rem; }
+.wd-pad-opt { font-size: .9rem; color: #2b2417; }
+.wd-pad-row .wd-gcell {
+  flex: none; width: 26px; height: 26px; border-radius: 6px;
+  border: 1.5px solid #8a744a; background: rgba(255,255,255,.5);
+}
+.wd-pad-reset {
+  margin-top: .5rem; width: 100%; padding: .5rem; border-radius: 8px;
+  border: 1px solid #8a744a; background: rgba(107,88,54,.12); color: #4a3c22;
+  font-weight: 600; cursor: pointer; font-size: .82rem;
+}
+.wd-pad-reset:hover { background: rgba(107,88,54,.22); }
+@media (max-width: 640px) {
+  .wd-pad-toggle-label { display: none; }
+}
+
+/* ── Group play: lobby (crime-case file look) ──────────────────────────────── */
+.lobby-file {
+  /* Pin an explicit font here so per-sequence theme fonts (set via var(--font) on
+     <body>) don't bleed into evidence-file styled containers — they keep their
+     own case-file look. Inner elements with their own font-family (h2, head,
+     buttons) still win. */
+  font-family: 'Inter', system-ui, sans-serif;
+  max-width: 480px; margin: 1.5rem auto; text-align: center; color: #e8e2d2;
+  background: #232019;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.05), transparent 55%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,.10) 0 2px, transparent 2px 10px);
+  border: 1px solid rgba(0,0,0,.55); border-radius: 10px; overflow: hidden;
+  box-shadow: 0 26px 70px rgba(0,0,0,.62);
+  animation: fadeIn .4s ease;
+}
+.lobby-file-host { box-shadow: 0 26px 70px rgba(0,0,0,.62), 0 0 0 2px #d9a93b; }
+.lobby-file-head {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #7f1d1d; color: #fde8e8; border-bottom: 3px solid #450a0a; padding: .8rem 1.15rem;
+  font-family: 'Special Elite', 'Courier New', monospace; letter-spacing: .12em; font-size: .85rem;
+}
+.lobby-stamp {
+  border: 2px solid #fde8e8; border-radius: 4px; padding: .08rem .45rem;
+  font-size: .56rem; letter-spacing: .14em; transform: rotate(2.5deg);
+}
+.lobby-file-body { padding: 1.9rem 1.6rem; }
+.lobby-file-body h2 { font-family: 'Special Elite', 'Cinzel', serif; font-size: 1.45rem; color: #fff; margin-bottom: .4rem; }
+.lobby-file-body .gate-sub { color: rgba(255,255,255,.6); font-size: .9rem; margin-bottom: 1.1rem; }
+.lobby-file-body .code-error { margin-bottom: 1rem; }
+/* Start gate: more breathing room under the headline, and a stacked form so the
+   button matches the "Start the Investigation" gate (full-width .lobby-btn). */
+#start-gate .lobby-file-body h2 { margin-bottom: 1.2rem; }
+#start-form { display: flex; flex-direction: column; gap: .8rem; align-items: stretch; margin-top: 1rem; }
+#start-form .code-input { width: 100%; max-width: none; min-width: 0; }
+
+.lobby-actions { display: flex; flex-direction: column; gap: .7rem; }
+
+/* Tooltip wrapper for lobby action buttons */
+.lobby-tip {
+  position: relative;
+}
+.lobby-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 14, 5, .93);
+  color: #f4ecd8;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: .78rem;
+  font-weight: 400;
+  letter-spacing: .01em;
+  line-height: 1.4;
+  padding: .5rem .75rem;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 213, 107, .35);
+  white-space: normal;
+  width: max-content;
+  max-width: 240px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s ease;
+  z-index: 10;
+}
+.lobby-tip::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(255, 213, 107, .35);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s ease;
+  z-index: 10;
+}
+.lobby-tip:hover::after,
+.lobby-tip:focus-within::after,
+.lobby-tip:hover::before,
+.lobby-tip:focus-within::before { opacity: 1; }
+.lobby-btn {
+  width: 100%; cursor: pointer; border: none; border-radius: 10px;
+  padding: .85rem 1.2rem; font-size: 1rem; font-weight: 700; letter-spacing: .03em;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  background: linear-gradient(180deg, #ffd56b, #dca72c); color: #2a1d05;
+  box-shadow: 0 3px 10px rgba(0,0,0,.4);
+}
+.lobby-btn:hover { filter: brightness(1.06); }
+.lobby-btn-ghost { background: rgba(255,255,255,.08); color: #f4ecd8; border: 1px solid rgba(255,255,255,.22); box-shadow: none; }
+.lobby-btn-join { width: auto; }
+.lobby-btn-start { background: linear-gradient(180deg, #2fae66, #18833f); color: #fff; font-size: 1.1rem; padding: .95rem 1.2rem; }
+
+.lobby-help {
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,213,107,.2);
+}
+.lobby-help-toggle {
+  display: block;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  padding: .55rem .75rem;
+  color: rgba(255,255,255,.5);
+  font-size: .82rem;
+  letter-spacing: .04em;
+  list-style: none;
+  user-select: none;
+}
+.lobby-help-toggle::-webkit-details-marker { display: none; }
+.lobby-help-toggle::before { content: '▸ '; }
+details[open] .lobby-help-toggle::before { content: '▾ '; }
+.lobby-help-toggle:hover { color: rgba(255,213,107,.8); }
+.lobby-help-body {
+  padding: .7rem .9rem .85rem;
+  border-top: 1px solid rgba(255,213,107,.15);
+}
+.lobby-help-body p {
+  color: rgba(255,255,255,.65);
+  font-size: .84rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.lobby-help-body p + p { margin-top: .6rem; }
+.lobby-help-body strong { color: #f4ecd8; font-weight: 700; }
+
+.lobby-join { margin-top: 1.6rem; }
+.lobby-or { color: rgba(255,255,255,.4); font-size: .8rem; letter-spacing: .06em; margin-bottom: .7rem; text-transform: uppercase; }
+
+/* group code as a red evidence tag (click to copy) */
+.lobby-code {
+  position: relative; display: inline-block; cursor: pointer;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 2.2rem; font-weight: 700; letter-spacing: .28em;
+  color: #b3261e; background: #fff; border: 2.5px solid #b3261e; border-radius: 6px;
+  padding: .5rem .7rem .5rem 1rem; margin: .5rem 0 1.1rem; transform: rotate(-1.5deg);
+  box-shadow: 0 5px 14px rgba(0,0,0,.45); transition: transform .12s;
+}
+.lobby-code:hover { transform: rotate(-1.5deg) scale(1.03); }
+.lobby-code:focus-visible { outline: 3px solid #ffd166; outline-offset: 3px; }
+.lobby-copied {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: #16a34a; color: #fff; border-radius: 4px; letter-spacing: .1em;
+  font-size: 1.25rem; opacity: 0; pointer-events: none; transition: opacity .15s;
+}
+.lobby-copied.show { opacity: 1; }
+.lobby-share {
+  display: flex; align-items: center; justify-content: center; gap: .4rem;
+  width: fit-content; margin: -.2rem auto 1.2rem;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.22);
+  color: #ffd166; font-family: inherit; font-size: .9rem; font-weight: 600;
+  padding: .5rem 1rem; border-radius: 8px; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.lobby-share:hover { background: rgba(255,255,255,.12); border-color: rgba(255,209,102,.6); }
+.lobby-code-inline { color: #ffd166; letter-spacing: .14em; font-family: 'Special Elite', 'Courier New', monospace; }
+.lobby-members { color: rgba(255,255,255,.72); font-size: .92rem; margin-bottom: 1.3rem; }
+.lobby-members #lobby-members { color: #fff; font-weight: 700; }
+.lobby-note {
+  margin-top: 1.1rem; font-size: .8rem; color: rgba(255,209,102,.9); line-height: 1.5;
+  border-top: 1px dashed rgba(255,255,255,.14); padding-top: .9rem;
+}
+.lobby-spinner {
+  width: 44px; height: 44px; margin: 1.3rem auto; border-radius: 50%;
+  border: 4px solid rgba(255,255,255,.15); border-top-color: #d9a93b;
+  animation: lobbySpin 1s linear infinite;
+}
+@keyframes lobbySpin { to { transform: rotate(360deg); } }
+.group-wait { border-style: solid; border-color: rgba(108,99,255,.4); }
+.group-badge {
+  position: fixed; left: 1rem; bottom: 1rem; z-index: 500;
+  background: rgba(20,20,31,.82); border: 1px solid rgba(255,255,255,.2); color: #fff;
+  font-size: .8rem; font-weight: 600; padding: .4rem .8rem; border-radius: 20px;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+
 /* ── Code input form ───────────────────────────────────────────────────────── */
 .code-form { margin-top: 1rem; }
 .code-input-wrap {
@@ -139,6 +899,25 @@ a.btn-reset { text-decoration: none; display: inline-block; }
 .code-input:focus {
   outline: none; border-color: var(--btn-color, #6c63ff);
   box-shadow: 0 0 0 3px rgba(108,99,255,.2);
+}
+/* Evidence (case-file) text inputs — keep them neutral, isolated from the
+   per-sequence theme's text/button colours. Black focus outline per request. */
+.lobby-file input,
+.lobby-file textarea {
+  color: #f4ecd8;
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+}
+.lobby-file input::placeholder,
+.lobby-file textarea::placeholder { color: rgba(255,255,255,.45); }
+.lobby-file input:focus,
+.lobby-file input:focus-visible,
+.lobby-file textarea:focus,
+.lobby-file textarea:focus-visible {
+  outline: 3px solid #000 !important;
+  outline-offset: 2px;
+  border-color: rgba(255,255,255,.4) !important;
+  box-shadow: none !important;
 }
 .code-input::placeholder { text-transform: none; letter-spacing: normal; font-weight: 400; }
 .code-submit, .btn-primary {
@@ -161,6 +940,82 @@ a.btn-reset { text-decoration: none; display: inline-block; }
   position: relative; overflow: hidden;
 }
 .content-card:hover { border-color: rgba(255,255,255,.12); }
+/* Collapsible clue cards (whodunit & open). Uses native <details>/<summary> —
+   no JS, accessible by default. */
+.clue-collapsible > summary {
+  list-style: none; cursor: pointer; position: relative;
+  padding: .25rem 2.5rem .25rem 0;
+  margin: 0;
+  transition: opacity .15s;
+}
+.clue-collapsible > summary::-webkit-details-marker { display: none; }
+.clue-collapsible > summary::marker { content: ''; }
+.clue-collapsible[open] > summary { margin-bottom: 1rem; }
+.clue-collapsible > summary:hover { opacity: .9; }
+.clue-collapsible > summary:hover .clue-chevron { color: #fff; }
+.clue-collapsible > summary:hover .clue-collapse-hint { background: rgba(108,99,255,.32); }
+
+/* Pill that screams "tap me". Hidden once the clue is open. */
+.clue-collapse-hint {
+  display: inline-block; margin-top: .35rem;
+  background: rgba(108,99,255,.2); border: 1px solid rgba(108,99,255,.45);
+  color: #b3acff; font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; padding: .25rem .65rem; border-radius: 999px;
+  transition: background .15s;
+}
+.clue-collapsible[open] .clue-collapse-hint { display: none; }
+
+/* Bigger, chunkier chevron centred vertically in the header. */
+.clue-chevron {
+  position: absolute; right: .25rem; top: 50%; transform: translateY(-50%);
+  width: 2rem; height: 2rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; line-height: 1;
+  color: rgba(255,255,255,.7); background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.15);
+  transition: transform .2s, color .15s, background .15s;
+  user-select: none;
+}
+.clue-collapsible[open] .clue-chevron {
+  transform: translateY(-50%) rotate(180deg);
+  color: rgba(255,255,255,.85);
+}
+
+/* When the clue is collapsed, dim the body just enough that the header reads
+   as the active surface (the body content is hidden anyway, but this also
+   tightens the card visually). */
+.clue-collapsible:not([open]) { padding-bottom: 1.5rem; }
+
+/* Kraft case-file variant inside .wd-evidence — sepia palette against cream. */
+.wd-evidence .clue-collapse-hint {
+  background: rgba(179,38,30,.12); border-color: rgba(179,38,30,.5); color: #7a1a13;
+}
+.wd-evidence .clue-collapsible > summary:hover .clue-collapse-hint { background: rgba(179,38,30,.22); }
+.wd-evidence .clue-chevron {
+  color: #6b5836; background: rgba(107,88,54,.12); border-color: rgba(107,88,54,.4);
+}
+.wd-evidence .clue-collapsible > summary:hover .clue-chevron { color: #2b2417; background: rgba(107,88,54,.22); }
+.wd-evidence .clue-collapsible[open] .clue-chevron { color: #2b2417; }
+/* Hint toggle — re-skinned for the cream/kraft case-file palette */
+.wd-evidence .hint-toggle { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed rgba(107,88,54,.3); text-align: center; }
+.wd-evidence .btn-hint {
+  background: rgba(179,38,30,.1); border: 1.5px solid rgba(179,38,30,.55);
+  color: #7a1a13; font-weight: 700; font-size: .88rem; letter-spacing: .04em;
+  padding: .55rem 1.4rem; border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(107,88,54,.18);
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.wd-evidence .btn-hint:hover {
+  background: rgba(179,38,30,.2); border-color: rgba(179,38,30,.85);
+  color: #5c1210; box-shadow: 0 2px 6px rgba(107,88,54,.28);
+}
+.wd-evidence .hint-content {
+  margin-top: 1rem; background: #fdf6e3;
+  border: 1px solid rgba(179,38,30,.25); border-radius: 5px; padding: 1.1rem;
+  box-shadow: inset 0 1px 3px rgba(107,88,54,.1);
+}
+.wd-evidence .hint-content .hint-text,
+.wd-evidence .hint-content .hint-text * { color: #34291a !important; }
 .card-accent-bar {
   position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
   background: linear-gradient(180deg, var(--btn-color, #6c63ff), var(--accent, #ff6b6b));
@@ -237,24 +1092,28 @@ a.btn-reset { text-decoration: none; display: inline-block; }
 .file-link:hover { background: rgba(255,255,255,.1); }
 
 /* ── Decoy site link ───────────────────────────────────────────────────────── */
+/* Solid call-to-action button so it stands out on BOTH the dark page background
+   and the cream kraft evidence/clue cards (the previous translucent-white style
+   disappeared against the kraft). */
 .site-link-card {
   display: flex; align-items: center; gap: 1rem;
   padding: 1.1rem 1.4rem; border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.04);
-  color: var(--text-color, #e0e0e0); text-decoration: none;
-  transition: all .2s;
+  border: 2px solid var(--btn-color, #6c63ff);
+  background: var(--btn-color, #6c63ff);
+  color: var(--btn-text, #fff); text-decoration: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  transition: filter .15s, transform .15s, box-shadow .15s;
 }
 .site-link-card:hover {
-  border-color: var(--btn-color, #6c63ff);
-  background: rgba(108,99,255,.08);
-  transform: translateY(-1px);
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(0,0,0,.45);
 }
-.site-link-icon { font-size: 1.5rem; flex-shrink: 0; }
-.site-link-text { flex: 1; }
-.site-link-text strong { display: block; font-size: 1rem; font-weight: 600; }
-.site-link-text span { font-size: .8rem; color: rgba(255,255,255,.45); }
-.site-link-arrow { font-size: 1.1rem; color: rgba(255,255,255,.35); }
+.site-link-icon { font-size: 1.6rem; flex-shrink: 0; color: inherit; }
+.site-link-text { flex: 1; color: inherit; }
+.site-link-text strong { display: block; font-size: 1.05rem; font-weight: 700; color: inherit; }
+.site-link-text span { font-size: .8rem; color: inherit; opacity: .85; }
+.site-link-arrow { font-size: 1.2rem; color: inherit; opacity: .9; }
 .media-caption { font-size: .82rem; color: rgba(255,255,255,.4); margin-top: .5rem; text-align: center; }
 
 /* ── Locked indicator (ghost) ──────────────────────────────────────────────── */
@@ -612,24 +1471,33 @@ html.gb-modal-open { overflow: hidden; }
 }
 .gb-fireworks.gb-fade { opacity: 0; }
 .gb-firework {
+  /* Per-theme saturation/lightness (hue is set inline per spark). Defaults give
+     the bright Candy Land burst; .gb-theme-* overrides below retune the mood. */
+  --gb-fw-sat: 100%;
+  --gb-fw-light: 70%;
   position: absolute;
   left: var(--gb-fw-x, 50%);
   top:  var(--gb-fw-y, 50%);
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: hsl(var(--gb-fw-hue, 30), 100%, 70%);
+  background: hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light));
   opacity: 0;
   animation: gbFwBurst 1.6s ease-out var(--gb-fw-delay, 0s) infinite;
   box-shadow:
-     0 -60px 0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-     42px -42px 0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-     60px   0  0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-     42px  42px 0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-      0  60px 0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-    -42px  42px 0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-    -60px   0  0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%),
-    -42px -42px 0 -2px hsl(var(--gb-fw-hue, 30), 100%, 70%);
+     0 -60px 0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+     42px -42px 0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+     60px   0  0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+     42px  42px 0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+      0  60px 0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+    -42px  42px 0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+    -60px   0  0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light)),
+    -42px -42px 0 -2px hsl(var(--gb-fw-hue, 30), var(--gb-fw-sat), var(--gb-fw-light));
 }
+/* Frosty, soft sparks for Winter; pastel for Birthday; punchy neon for Spooky. */
+.gb-fireworks.gb-theme-winter   .gb-firework { --gb-fw-sat: 70%;  --gb-fw-light: 85%; }
+.gb-fireworks.gb-theme-spooky   .gb-firework { --gb-fw-sat: 100%; --gb-fw-light: 60%; }
+.gb-fireworks.gb-theme-pool     .gb-firework { --gb-fw-sat: 95%;  --gb-fw-light: 68%; }
+.gb-fireworks.gb-theme-birthday .gb-firework { --gb-fw-sat: 90%;  --gb-fw-light: 72%; }
 @keyframes gbFwBurst {
   0%   { opacity: 0; transform: scale(0); }
   10%  { opacity: 1; }
@@ -670,4 +1538,742 @@ html.gb-modal-open { overflow: hidden; }
   .gb-tile { width: 44px; height: 40px; }
   .gb-tile-num { font-size: .92rem; }
   .gb-start, .gb-finale { width: 62px !important; height: 62px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Game Board themes
+   The base .gb-board / .gb-tile / .gb-start / .gb-finale / .gb-modal rules above
+   ARE the Candy Land look (.gb-theme-candyland needs no overrides). Each block
+   below restyles a board+modal for one theme. The theme class sits on BOTH the
+   #gb-board element and the #gb-modal overlay, so board selectors are written on
+   the class itself (e.g. .gb-theme-winter.gb-board) and modal/tile selectors as
+   descendants (e.g. .gb-theme-winter .gb-tile).
+
+   "Spread" themes stagger tiles vertically with `top:` (which hover transforms
+   don't clobber) so the path meanders instead of running dead straight — tiles
+   stay numbered so order is still clear.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Shared meandering path for every non–Candy Land theme. */
+.gb-theme-winter   .gb-row .gb-tile:nth-child(3n+1),
+.gb-theme-spooky   .gb-row .gb-tile:nth-child(3n+1),
+.gb-theme-pool     .gb-row .gb-tile:nth-child(3n+1),
+.gb-theme-birthday .gb-row .gb-tile:nth-child(3n+1) { top: -20px; }
+.gb-theme-winter   .gb-row .gb-tile:nth-child(3n+2),
+.gb-theme-spooky   .gb-row .gb-tile:nth-child(3n+2),
+.gb-theme-pool     .gb-row .gb-tile:nth-child(3n+2),
+.gb-theme-birthday .gb-row .gb-tile:nth-child(3n+2) { top: 16px; }
+.gb-theme-winter   .gb-row .gb-tile:nth-child(3n),
+.gb-theme-spooky   .gb-row .gb-tile:nth-child(3n),
+.gb-theme-pool     .gb-row .gb-tile:nth-child(3n),
+.gb-theme-birthday .gb-row .gb-tile:nth-child(3n)   { top: -4px; }
+/* Give the staggered rows a little more breathing room. */
+.gb-theme-winter.gb-board,
+.gb-theme-spooky.gb-board,
+.gb-theme-pool.gb-board,
+.gb-theme-birthday.gb-board { gap: 2rem; }
+
+/* Themed START / FINISH markers.
+   Instead of the Candy Land striped lollipops, each themed board paints its
+   Start/Finish tiles with a soft themed medallion and a big emblem glyph
+   (set per theme via ::after content) — snowflake, jack-o'-lantern, floatie,
+   gift, etc. The ::before ribbon ("START"/"FINISH") stays on top. */
+.gb-theme-winter   .gb-start::after, .gb-theme-winter   .gb-finale::after,
+.gb-theme-spooky   .gb-start::after, .gb-theme-spooky   .gb-finale::after,
+.gb-theme-pool     .gb-start::after, .gb-theme-pool     .gb-finale::after,
+.gb-theme-birthday .gb-start::after, .gb-theme-birthday .gb-finale::after {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 3.3rem; line-height: 1; z-index: 2;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,.35));
+}
+@media (max-width: 480px) {
+  .gb-theme-winter   .gb-start::after, .gb-theme-winter   .gb-finale::after,
+  .gb-theme-spooky   .gb-start::after, .gb-theme-spooky   .gb-finale::after,
+  .gb-theme-pool     .gb-start::after, .gb-theme-pool     .gb-finale::after,
+  .gb-theme-birthday .gb-start::after, .gb-theme-birthday .gb-finale::after { font-size: 2rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WINTER WONDERLAND — full-page immersive theme
+   The .gb-page-winter class is on <body>, so the entire page becomes a snowy
+   night scene: deep dusk sky, glowing moon, twinkling stars, a snow-capped
+   pastel village on the horizon, drifting snow on the ground and three layers
+   of falling snow. .gb-scene-winter holds the decorative layers behind content.
+   ════════════════════════════════════════════════════════════════════════════ */
+body.gb-page-winter {
+  background:
+    radial-gradient(circle at 80% 12%, rgba(255,253,235,.30), transparent 26%),
+    linear-gradient(180deg, #16224a 0%, #283a72 26%, #5a6aa6 50%, #9d8bba 70%, #e7c4cf 100%) !important;
+  background-attachment: fixed !important;
+  color: #eef4ff;
+  min-height: 100vh;
+}
+/* Keep all real page content above the scene. */
+body.gb-page-winter .seq-container { position: relative; z-index: 2; }
+body.gb-page-winter .seq-title {
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(150,195,255,.85), 0 0 4px rgba(255,255,255,.6);
+}
+
+/* Scene layers ------------------------------------------------------------- */
+.gb-scene-winter {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.gb-scene-winter .gb-moon {
+  position: absolute; top: 3.5%; right: 7%;
+  width: 86px; height: 86px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #fffef6 0 55%, #f1edd2 78%, #e2dcbb 100%);
+  box-shadow: 0 0 40px 14px rgba(255,253,235,.55), 0 0 130px 60px rgba(214,224,255,.28);
+  z-index: 1;
+}
+.gb-scene-winter .gb-stars {
+  position: absolute; left: 0; right: 0; top: 0; height: 60%; z-index: 1;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 28% 42%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 44% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 34%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 72% 8%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 28%, #fff, transparent),
+    radial-gradient(1px 1px at 18% 56%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 52% 52%, #fff, transparent),
+    radial-gradient(1px 1px at 35% 64%, #fff, transparent);
+  animation: gbTwinkle 4s ease-in-out infinite alternate;
+}
+@keyframes gbTwinkle { from { opacity: .5; } to { opacity: 1; } }
+
+/* Snowy pastel village along the horizon. */
+.gb-scene-winter .gb-skyline {
+  position: absolute; left: 0; right: 0; bottom: 11vh; height: 180px; z-index: 3;
+  background: url("../img/winter-village.svg") repeat-x bottom center;
+  background-size: auto 180px;
+  opacity: .96;
+  filter: drop-shadow(0 6px 10px rgba(20,30,70,.35));
+}
+/* Soft snow drift across the bottom of the page. */
+.gb-scene-winter .gb-snowground {
+  position: absolute; left: -5%; right: -5%; bottom: -3vh; height: 26vh; z-index: 5;
+  background: radial-gradient(140% 100% at 50% 130%, #ffffff 0 52%, rgba(255,255,255,.85) 64%, rgba(255,255,255,0) 78%);
+  filter: blur(1px);
+}
+
+/* Three parallax layers of falling snow. The vertical loop distance equals each
+   layer's tile height (--gb-snow-h) so it repeats seamlessly; a gentle sway adds
+   wind drift without breaking the loop. */
+.gb-scene-winter .gb-snow {
+  position: absolute; left: -20px; right: -20px; top: -300px; bottom: -20px;
+  animation: gbSnowFall linear infinite, gbSnowSway ease-in-out infinite alternate;
+}
+@keyframes gbSnowFall { from { background-position: 0 0; } to { background-position: 0 var(--gb-snow-h, 300px); } }
+@keyframes gbSnowSway { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+.gb-scene-winter .gb-snow-far {
+  --gb-snow-h: 260px; background-size: 260px 260px; opacity: .65; z-index: 2;
+  animation-duration: 15s, 12s;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20px 30px, rgba(255,255,255,.9), transparent),
+    radial-gradient(1.5px 1.5px at 130px 90px, rgba(255,255,255,.8), transparent),
+    radial-gradient(1px 1px at 70px 170px, rgba(255,255,255,.9), transparent),
+    radial-gradient(1.5px 1.5px at 190px 50px, rgba(255,255,255,.8), transparent),
+    radial-gradient(1px 1px at 230px 140px, rgba(255,255,255,.9), transparent);
+}
+.gb-scene-winter .gb-snow-mid {
+  --gb-snow-h: 330px; background-size: 330px 330px; opacity: .85; z-index: 4;
+  animation-duration: 9.5s, 8s;
+  background-image:
+    radial-gradient(2.5px 2.5px at 40px 60px, #fff, transparent),
+    radial-gradient(2px 2px at 160px 20px, #fff, transparent),
+    radial-gradient(2.5px 2.5px at 110px 150px, #fff, transparent),
+    radial-gradient(2px 2px at 240px 110px, #fff, transparent),
+    radial-gradient(2.5px 2.5px at 300px 200px, #fff, transparent),
+    radial-gradient(2px 2px at 70px 280px, #fff, transparent);
+}
+.gb-scene-winter .gb-snow-near {
+  --gb-snow-h: 420px; background-size: 420px 420px; opacity: .95; z-index: 6;
+  animation-duration: 6s, 5s; filter: blur(.4px);
+  background-image:
+    radial-gradient(3.5px 3.5px at 60px 40px, #fff, transparent),
+    radial-gradient(4px 4px at 220px 130px, #fff, transparent),
+    radial-gradient(3px 3px at 340px 70px, #fff, transparent),
+    radial-gradient(3.5px 3.5px at 140px 230px, #fff, transparent),
+    radial-gradient(4px 4px at 380px 320px, #fff, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-scene-winter .gb-snow, .gb-scene-winter .gb-stars { animation: none; }
+}
+
+/* ── Winter board: a frozen clearing rather than a candy frame ──────────── */
+.gb-theme-winter.gb-board {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.55), transparent 45%),
+    linear-gradient(160deg, rgba(228,242,255,.55) 0%, rgba(187,214,246,.45) 55%, rgba(150,186,232,.45) 100%);
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  border: 5px solid rgba(255,255,255,.7);
+  box-shadow: 0 16px 44px rgba(18,36,78,.5), inset 0 0 50px rgba(255,255,255,.45);
+}
+.gb-theme-winter.gb-board::before {
+  /* Sparkly frost dusting on the ice surface */
+  background-image:
+    radial-gradient(circle at  8% 14%, #ffffff 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 22% 70%, #ffffff 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 30%, #ffffff 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 58% 82%, #ffffff 0 2px, transparent 3px),
+    radial-gradient(circle at 74% 22%, #ffffff 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 90% 60%, #ffffff 0 2px, transparent 3px),
+    radial-gradient(circle at 33% 92%, #ffffff 0 2px, transparent 3px),
+    radial-gradient(circle at 66% 50%, #ffffff 0 2px, transparent 3px);
+  opacity: .55;
+}
+.gb-theme-winter .gb-tile {
+  color: #15375c; text-shadow: 0 1px 1px rgba(255,255,255,.7);
+  border-color: #ffffff;
+  box-shadow: 0 6px 12px rgba(30,60,110,.3), inset 0 2px 6px rgba(255,255,255,.7), inset 0 -3px 0 rgba(40,80,130,.14);
+}
+.gb-theme-winter .gb-tile.gb-c-1 { background: linear-gradient(160deg, #aee3f5, #7ec8e3); }
+.gb-theme-winter .gb-tile.gb-c-2 { background: linear-gradient(160deg, #d3eefb, #a7d8f0); }
+.gb-theme-winter .gb-tile.gb-c-3 { background: linear-gradient(160deg, #7fb3e6, #5b9bd5); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+.gb-theme-winter .gb-tile.gb-c-4 { background: linear-gradient(160deg, #f0f8ff, #d6ecff); }
+.gb-theme-winter .gb-tile.gb-c-5 { background: linear-gradient(160deg, #aabde6, #8ea9db); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+.gb-theme-winter .gb-tile.gb-c-6 { background: linear-gradient(160deg, #dbe6f3, #c2d4e8); }
+/* Start = a snowflake; Finish = a snowman, on frosty medallions. */
+.gb-theme-winter .gb-start, .gb-theme-winter .gb-finale {
+  background: radial-gradient(circle at 50% 40%, #ffffff 0 52%, #d6ecff 74%, #9fb9e0 100%) !important;
+  border-color: #ffffff !important;
+}
+.gb-theme-winter .gb-start::after  { content: '\2744\FE0F'; }   /* ❄️ snowflake */
+.gb-theme-winter .gb-finale::after { content: '\26C4'; }        /* ⛄ snowman   */
+.gb-theme-winter .gb-start::before  { background: #5b9bd5; }
+.gb-theme-winter .gb-finale::before { background: #2f6fb0; }
+/* Locked tiles stay frosty (lightly iced over) rather than going dull grey. */
+.gb-theme-winter .gb-locked { filter: grayscale(.2) brightness(1.02); opacity: .82; }
+.gb-theme-winter .gb-modal-box {
+  background: #0f2740; color: #e7f1fb;
+  border-color: rgba(160,210,255,.3);
+}
+.gb-theme-winter .gb-modal-sub { color: rgba(231,241,251,.7); }
+.gb-theme-winter .gb-modal-body .card-label { background: rgba(91,155,213,.22); color: #bcdcff; }
+.gb-theme-winter .gb-modal-body .card-label.accent { background: rgba(167,216,240,.2); color: #d6ecff; }
+.gb-theme-winter .gb-modal-body .rich-content blockquote { border-left-color: #5b9bd5; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCARY SPOOKY NIGHT — full-page haunted-graveyard theme
+   ════════════════════════════════════════════════════════════════════════════ */
+body.gb-page-spooky {
+  background:
+    radial-gradient(circle at 82% 14%, rgba(255,206,110,.20), transparent 24%),
+    radial-gradient(circle at 28% 96%, rgba(106,13,173,.40), transparent 52%),
+    linear-gradient(180deg, #0a0615 0%, #190d31 42%, #281547 72%, #371d3e 100%) !important;
+  background-attachment: fixed !important;
+  color: #ece3f5; min-height: 100vh;
+}
+body.gb-page-spooky .seq-container { position: relative; z-index: 2; }
+body.gb-page-spooky .seq-title {
+  color: #fff; text-shadow: 0 0 12px rgba(154,205,50,.65), 0 2px 12px rgba(255,117,24,.5);
+}
+.gb-scene-spooky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.gb-scene-spooky .gb-moon {
+  position: absolute; top: 3%; right: 5%; width: 92px; height: 92px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fdf6c8 0 55%, #ecd98c 80%, #d6c06a 100%);
+  box-shadow: 0 0 50px 16px rgba(253,246,200,.5), 0 0 130px 60px rgba(154,205,50,.18);
+  z-index: 1;
+}
+.gb-scene-spooky .gb-stars {
+  position: absolute; left: 0; right: 0; top: 0; height: 65%; z-index: 1; opacity: .8;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fdf6c8, transparent),
+    radial-gradient(1px 1px at 28% 42%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 46% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 62% 34%, #fdf6c8, transparent),
+    radial-gradient(1.5px 1.5px at 74% 9%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 28%, #fff, transparent),
+    radial-gradient(1px 1px at 20% 56%, #fdf6c8, transparent),
+    radial-gradient(1.5px 1.5px at 54% 52%, #fff, transparent);
+  animation: gbTwinkle 4s ease-in-out infinite alternate;
+}
+.gb-scene-spooky .gb-bats {
+  position: absolute; top: 9%; left: -20px; right: -20px; height: 150px; z-index: 2; opacity: .9;
+  background: url("../img/spooky-bats.svg") repeat-x; background-size: 360px 140px;
+  animation: gbBatsFly 24s linear infinite, gbBatBob 3s ease-in-out infinite alternate;
+}
+@keyframes gbBatsFly { from { background-position: 0 0; } to { background-position: -720px 0; } }
+@keyframes gbBatBob { from { transform: translateY(-7px); } to { transform: translateY(7px); } }
+.gb-scene-spooky .gb-skyline {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 210px; z-index: 3;
+  background: url("../img/spooky-skyline.svg") repeat-x bottom center; background-size: auto 210px;
+  filter: drop-shadow(0 0 14px rgba(154,205,50,.18));
+}
+.gb-scene-spooky .gb-fog {
+  position: absolute; left: -12%; right: -12%; bottom: 0; height: 46%; z-index: 4;
+  background:
+    radial-gradient(60% 100% at 18% 100%, rgba(196,206,224,.20), transparent 70%),
+    radial-gradient(50% 100% at 52% 100%, rgba(176,194,214,.18), transparent 70%),
+    radial-gradient(70% 100% at 86% 100%, rgba(206,214,228,.16), transparent 70%);
+  animation: gbFogDrift ease-in-out infinite alternate;
+}
+.gb-scene-spooky .gb-fog-1 { animation-duration: 22s; opacity: .75; }
+.gb-scene-spooky .gb-fog-2 { animation-duration: 32s; animation-direction: alternate-reverse; opacity: .5; height: 34%; }
+@keyframes gbFogDrift { from { transform: translateX(-7%); } to { transform: translateX(7%); } }
+@media (prefers-reduced-motion: reduce) {
+  .gb-scene-spooky .gb-bats, .gb-scene-spooky .gb-fog, .gb-scene-spooky .gb-stars { animation: none; }
+}
+
+/* ── Spooky board: a misty crypt panel floating in the dark ─────────────── */
+.gb-theme-spooky.gb-board {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,117,24,.14), transparent 45%),
+    linear-gradient(160deg, rgba(42,24,64,.55) 0%, rgba(26,12,40,.55) 60%, rgba(18,9,29,.62) 100%);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  border-color: rgba(255,117,24,.55);
+  box-shadow: 0 16px 44px rgba(0,0,0,.6), 0 0 0 1px rgba(255,117,24,.2), inset 0 0 60px rgba(106,13,173,.3);
+}
+.gb-theme-spooky.gb-board::before {
+  /* Faint stars + eerie glints */
+  background-image:
+    radial-gradient(circle at 10% 16%, #fdf6c8 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 30% 60%, #9acd32 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 52% 24%, #fdf6c8 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 70% 78%, #ff7518 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 88% 40%, #fdf6c8 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 44% 88%, #c084fc 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 78% 14%, #fdf6c8 0 1.5px, transparent 2.5px);
+  opacity: .6;
+}
+.gb-theme-spooky .gb-tile {
+  border-color: #2a1840; color: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,.5), inset 0 -3px 0 rgba(0,0,0,.3);
+}
+.gb-theme-spooky .gb-tile.gb-c-1 { background: #ff7518; } /* pumpkin   */
+.gb-theme-spooky .gb-tile.gb-c-2 { background: #6ab04c; } /* slime     */
+.gb-theme-spooky .gb-tile.gb-c-3 { background: #8e44ad; } /* witch     */
+.gb-theme-spooky .gb-tile.gb-c-4 { background: #b71c1c; } /* blood     */
+.gb-theme-spooky .gb-tile.gb-c-5 { background: #455a64; } /* tombstone */
+.gb-theme-spooky .gb-tile.gb-c-6 { background: #9acd32; } /* goo       */
+/* Start = jack-o'-lantern; Finish = ghost, on a dark eerie glow. */
+.gb-theme-spooky .gb-start {
+  background: radial-gradient(circle at 50% 45%, rgba(255,117,24,.35), rgba(26,16,38,.85) 72%) !important;
+  border-color: #ff7518 !important;
+}
+.gb-theme-spooky .gb-finale {
+  background: radial-gradient(circle at 50% 45%, rgba(154,205,50,.35), rgba(26,16,38,.85) 72%) !important;
+  border-color: #6ab04c !important;
+}
+.gb-theme-spooky .gb-start::after  { content: '\1F383'; }   /* 🎃 jack-o'-lantern */
+.gb-theme-spooky .gb-finale::after { content: '\1F47B'; }   /* 👻 ghost           */
+.gb-theme-spooky .gb-start::before  { background: #ff7518; color: #1a1026; }
+.gb-theme-spooky .gb-finale::before { background: #6ab04c; color: #14240b; }
+.gb-theme-spooky .gb-locked { filter: grayscale(.3) brightness(.8); opacity: .7; }
+.gb-theme-spooky .gb-modal-box {
+  background: #150a1f; color: #ece3f5;
+  border-color: rgba(255,117,24,.3);
+  box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 40px rgba(106,13,173,.3);
+}
+.gb-theme-spooky .gb-modal-sub { color: rgba(236,227,245,.7); }
+.gb-theme-spooky .gb-modal-body .card-label { background: rgba(255,117,24,.18); color: #ffb27a; }
+.gb-theme-spooky .gb-modal-body .card-label.accent { background: rgba(106,176,76,.2); color: #b6e29a; }
+.gb-theme-spooky .gb-modal-body .rich-content blockquote { border-left-color: #ff7518; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMMER TIME POOL PARTY — full-page sunny poolside theme
+   ════════════════════════════════════════════════════════════════════════════ */
+body.gb-page-pool {
+  background:
+    radial-gradient(circle at 80% 13%, rgba(255,243,170,.75), transparent 22%),
+    linear-gradient(180deg, #2bb6e6 0%, #76d8ff 38%, #bdeeff 66%, #eafaff 100%) !important;
+  background-attachment: fixed !important;
+  color: #07394d; min-height: 100vh;
+}
+body.gb-page-pool .seq-container { position: relative; z-index: 2; }
+/* Bright sky needs dark header text (cards keep their own colours). */
+body.gb-page-pool .seq-title { color: #053b51; text-shadow: 0 2px 10px rgba(255,255,255,.7); }
+body.gb-page-pool .progress-indicator, body.gb-page-pool .seq-timer { color: #064b66; }
+.gb-scene-pool { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.gb-scene-pool .gb-sun {
+  position: absolute; top: 2%; right: 3%; width: 100px; height: 100px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #fffbe0 0 40%, #ffe680 70%, #ffd24d 100%);
+  box-shadow: 0 0 60px 24px rgba(255,224,120,.6), 0 0 150px 75px rgba(255,210,90,.35);
+  z-index: 1; animation: gbSunPulse 5s ease-in-out infinite alternate;
+}
+@keyframes gbSunPulse { from { filter: brightness(1); } to { filter: brightness(1.14); } }
+.gb-scene-pool .gb-clouds {
+  position: absolute; top: 0; left: 0; right: 0; height: 55%; z-index: 1; opacity: .9;
+  background-image:
+    radial-gradient(44px 18px at 16% 30%, #fff 60%, transparent 62%),
+    radial-gradient(58px 24px at 19% 35%, #fff 60%, transparent 62%),
+    radial-gradient(40px 16px at 23% 32%, #fff 60%, transparent 62%),
+    radial-gradient(46px 18px at 68% 18%, #fff 60%, transparent 62%),
+    radial-gradient(62px 26px at 72% 23%, #fff 60%, transparent 62%),
+    radial-gradient(40px 16px at 77% 20%, #fff 60%, transparent 62%);
+  animation: gbCloudDrift 26s ease-in-out infinite alternate;
+}
+@keyframes gbCloudDrift { from { transform: translateX(-3%); } to { transform: translateX(3%); } }
+.gb-scene-pool .gb-skyline {
+  position: absolute; left: 0; right: 0; bottom: 22vh; height: 200px; z-index: 2;
+  background: url("../img/pool-skyline.svg") repeat-x bottom center; background-size: auto 200px;
+  filter: drop-shadow(0 8px 8px rgba(0,60,90,.2));
+}
+.gb-scene-pool .gb-water {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 24vh; z-index: 3; overflow: hidden;
+  background: linear-gradient(180deg, #58ccf2 0%, #1a93c8 55%, #0f6f9e 100%);
+  box-shadow: inset 0 10px 22px rgba(0,0,0,.15);
+}
+.gb-scene-pool .gb-water::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: rgba(255,255,255,.55);
+}
+.gb-scene-pool .gb-caustics {
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 18px, rgba(255,255,255,.18) 18px 22px, rgba(255,255,255,0) 22px 40px),
+    repeating-linear-gradient(65deg, rgba(255,255,255,0) 0 22px, rgba(255,255,255,.12) 22px 26px, rgba(255,255,255,0) 26px 48px);
+  opacity: .7; animation: gbCaustics 9s linear infinite;
+}
+@keyframes gbCaustics { from { background-position: 0 0, 0 0; } to { background-position: 120px 36px, -96px 28px; } }
+@media (prefers-reduced-motion: reduce) {
+  .gb-scene-pool .gb-sun, .gb-scene-pool .gb-clouds, .gb-scene-pool .gb-caustics { animation: none; }
+}
+
+/* ── Pool board: a clear panel of pool water ────────────────────────────── */
+.gb-theme-pool.gb-board {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.45), transparent 45%),
+    linear-gradient(160deg, rgba(121,216,255,.5) 0%, rgba(43,179,224,.46) 100%);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  border-color: rgba(255,255,255,.75);
+  box-shadow: 0 16px 44px rgba(0,80,120,.45), inset 0 0 40px rgba(255,255,255,.4);
+}
+.gb-theme-pool.gb-board::before {
+  /* Water bubbles */
+  background-image:
+    radial-gradient(circle at 12% 20%, rgba(255,255,255,.9) 0 4px, transparent 5px),
+    radial-gradient(circle at 28% 74%, rgba(255,255,255,.8) 0 3px, transparent 4px),
+    radial-gradient(circle at 46% 34%, rgba(255,255,255,.85) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 62% 82%, rgba(255,255,255,.8) 0 3px, transparent 4px),
+    radial-gradient(circle at 78% 24%, rgba(255,255,255,.9) 0 4px, transparent 5px),
+    radial-gradient(circle at 90% 64%, rgba(255,255,255,.8) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 36% 94%, rgba(255,255,255,.8) 0 3px, transparent 4px);
+  opacity: .7;
+}
+.gb-theme-pool .gb-tile {
+  border-color: #ffffff; color: #fff;
+  box-shadow: 0 4px 8px rgba(0,90,130,.3), inset 0 -3px 0 rgba(0,60,90,.15);
+}
+.gb-theme-pool .gb-tile.gb-c-1 { background: #00bcd4; } /* aqua     */
+.gb-theme-pool .gb-tile.gb-c-2 { background: #ff7f50; } /* coral    */
+.gb-theme-pool .gb-tile.gb-c-3 { background: #ffd54f; color:#5a4500; text-shadow:0 1px 1px rgba(255,255,255,.4); } /* sun */
+.gb-theme-pool .gb-tile.gb-c-4 { background: #4fc3f7; } /* sky      */
+.gb-theme-pool .gb-tile.gb-c-5 { background: #ff6fa5; } /* flamingo */
+.gb-theme-pool .gb-tile.gb-c-6 { background: #26c281; } /* palm     */
+/* Start = pool floatie; Finish = beach island, on watery medallions. */
+.gb-theme-pool .gb-start, .gb-theme-pool .gb-finale {
+  background: radial-gradient(circle at 50% 40%, #ffffff 0 48%, #bfeeff 70%, #5cc6ef 100%) !important;
+  border-color: #ffffff !important;
+}
+.gb-theme-pool .gb-start::after  { content: '\1F6DF'; }   /* 🛟 ring buoy / floatie */
+.gb-theme-pool .gb-finale::after { content: '\1F3DD\FE0F'; } /* 🏝️ desert island    */
+.gb-theme-pool .gb-start::before  { background: #ff5252; }
+.gb-theme-pool .gb-finale::before { background: #0277bd; }
+.gb-theme-pool .gb-locked { filter: grayscale(.25) brightness(.98); opacity: .82; }
+.gb-theme-pool .gb-modal-box {
+  background: #073549; color: #e4f6fc;
+  border-color: rgba(120,216,255,.3);
+}
+.gb-theme-pool .gb-modal-sub { color: rgba(228,246,252,.72); }
+.gb-theme-pool .gb-modal-body .card-label { background: rgba(0,188,212,.22); color: #8be6f5; }
+.gb-theme-pool .gb-modal-body .card-label.accent { background: rgba(255,213,79,.22); color: #ffe39a; }
+.gb-theme-pool .gb-modal-body .rich-content blockquote { border-left-color: #00bcd4; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BIRTHDAY PARTY — full-page confetti & balloons theme
+   ════════════════════════════════════════════════════════════════════════════ */
+body.gb-page-birthday {
+  background:
+    radial-gradient(circle at 50% -8%, rgba(255,255,255,.6), transparent 40%),
+    linear-gradient(180deg, #ffe3f1 0%, #ffd5ea 30%, #e8e6ff 68%, #d7f0ff 100%) !important;
+  background-attachment: fixed !important;
+  color: #5a2a48; min-height: 100vh;
+}
+body.gb-page-birthday .seq-container { position: relative; z-index: 2; }
+body.gb-page-birthday .seq-title {
+  color: #7a2350; text-shadow: 0 2px 10px rgba(255,255,255,.7), 0 0 6px rgba(233,30,99,.25);
+}
+body.gb-page-birthday .progress-indicator, body.gb-page-birthday .seq-timer { color: #7a2350; }
+.gb-scene-birthday { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.gb-scene-birthday .gb-bunting {
+  position: absolute; top: 0; left: 0; right: 0; height: 60px; z-index: 3;
+  background: url("../img/birthday-bunting.svg") repeat-x top center; background-size: 300px 60px;
+  filter: drop-shadow(0 3px 4px rgba(120,40,90,.25));
+}
+.gb-scene-birthday .gb-balloons {
+  position: absolute; left: 0; right: 0; top: 0; bottom: -420px; z-index: 1; opacity: .92;
+  background: url("../img/birthday-balloons.svg") repeat; background-size: 320px 420px;
+  animation: gbFloatUp 24s linear infinite, gbBalloonSway 6s ease-in-out infinite alternate;
+}
+@keyframes gbFloatUp { from { background-position: 0 0; } to { background-position: 0 -420px; } }
+@keyframes gbBalloonSway { from { transform: translateX(-10px); } to { transform: translateX(10px); } }
+/* Three layers of drifting confetti. */
+.gb-scene-birthday .gb-confetti {
+  position: absolute; left: -20px; right: -20px; top: -300px; bottom: -20px; z-index: 2;
+  animation: gbConfettiFall linear infinite, gbConfettiSway ease-in-out infinite alternate;
+}
+@keyframes gbConfettiFall { from { background-position: 0 0; } to { background-position: 0 var(--gb-conf-h, 300px); } }
+@keyframes gbConfettiSway { from { transform: translateX(-16px); } to { transform: translateX(16px); } }
+.gb-scene-birthday .gb-confetti-far {
+  --gb-conf-h: 280px; background-size: 280px 280px; opacity: .7; animation-duration: 14s, 11s;
+  background-image:
+    radial-gradient(3px 3px at 20px 30px, #e91e63, transparent),
+    radial-gradient(3px 3px at 130px 90px, #00bcd4, transparent),
+    radial-gradient(2.5px 2.5px at 70px 170px, #ffc107, transparent),
+    radial-gradient(3px 3px at 190px 50px, #9c27b0, transparent),
+    radial-gradient(2.5px 2.5px at 230px 140px, #8bc34a, transparent);
+}
+.gb-scene-birthday .gb-confetti-mid {
+  --gb-conf-h: 340px; background-size: 340px 340px; opacity: .85; animation-duration: 10s, 8s;
+  background-image:
+    radial-gradient(3.5px 3.5px at 40px 60px, #ff5722, transparent),
+    radial-gradient(3px 3px at 160px 20px, #e91e63, transparent),
+    radial-gradient(3.5px 3.5px at 110px 150px, #00bcd4, transparent),
+    radial-gradient(3px 3px at 250px 110px, #ffc107, transparent),
+    radial-gradient(3.5px 3.5px at 300px 210px, #9c27b0, transparent),
+    radial-gradient(3px 3px at 70px 290px, #8bc34a, transparent);
+}
+.gb-scene-birthday .gb-confetti-near {
+  --gb-conf-h: 420px; background-size: 420px 420px; opacity: .95; animation-duration: 6.5s, 5s; filter: blur(.3px);
+  background-image:
+    radial-gradient(4.5px 4.5px at 60px 40px, #e91e63, transparent),
+    radial-gradient(5px 5px at 220px 130px, #00bcd4, transparent),
+    radial-gradient(4px 4px at 340px 70px, #ffc107, transparent),
+    radial-gradient(4.5px 4.5px at 140px 230px, #9c27b0, transparent),
+    radial-gradient(5px 5px at 380px 330px, #ff5722, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-scene-birthday .gb-balloons, .gb-scene-birthday .gb-confetti { animation: none; }
+}
+
+/* ── Birthday board: a translucent party panel ──────────────────────────── */
+.gb-theme-birthday.gb-board {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.5), transparent 45%),
+    linear-gradient(160deg, rgba(255,243,249,.62) 0%, rgba(238,243,255,.55) 100%);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  border-color: rgba(255,255,255,.85);
+  box-shadow: 0 16px 44px rgba(120,40,90,.3), inset 0 0 40px rgba(255,255,255,.5);
+}
+.gb-theme-birthday.gb-board::before {
+  /* Confetti dots */
+  background-image:
+    radial-gradient(circle at  8% 14%, #e91e63 0 3px, transparent 4px),
+    radial-gradient(circle at 20% 78%, #00bcd4 0 3px, transparent 4px),
+    radial-gradient(circle at 34% 30%, #ffc107 0 3px, transparent 4px),
+    radial-gradient(circle at 50% 86%, #9c27b0 0 3px, transparent 4px),
+    radial-gradient(circle at 64% 22%, #8bc34a 0 3px, transparent 4px),
+    radial-gradient(circle at 78% 70%, #ff5722 0 3px, transparent 4px),
+    radial-gradient(circle at 90% 36%, #e91e63 0 3px, transparent 4px),
+    radial-gradient(circle at 44% 56%, #00bcd4 0 3px, transparent 4px);
+  opacity: .6;
+}
+.gb-theme-birthday .gb-tile {
+  border-color: #ffffff; color: #fff;
+  box-shadow: 0 4px 8px rgba(120,40,90,.25), inset 0 -3px 0 rgba(0,0,0,.12);
+}
+.gb-theme-birthday .gb-tile.gb-c-1 { background: #e91e63; } /* magenta */
+.gb-theme-birthday .gb-tile.gb-c-2 { background: #00bcd4; } /* teal    */
+.gb-theme-birthday .gb-tile.gb-c-3 { background: #ffc107; color:#5a4500; text-shadow:0 1px 1px rgba(255,255,255,.4); } /* gold */
+.gb-theme-birthday .gb-tile.gb-c-4 { background: #9c27b0; } /* purple  */
+.gb-theme-birthday .gb-tile.gb-c-5 { background: #8bc34a; } /* lime    */
+.gb-theme-birthday .gb-tile.gb-c-6 { background: #ff5722; } /* orange  */
+/* Start = wrapped gift; Finish = birthday cake, on festive medallions. */
+.gb-theme-birthday .gb-start, .gb-theme-birthday .gb-finale {
+  background: radial-gradient(circle at 50% 40%, #ffffff 0 50%, #ffe1ef 72%, #f7b6d4 100%) !important;
+  border-color: #ffffff !important;
+}
+.gb-theme-birthday .gb-start::after  { content: '\1F381'; }   /* 🎁 wrapped gift */
+.gb-theme-birthday .gb-finale::after { content: '\1F382'; }   /* 🎂 birthday cake */
+.gb-theme-birthday .gb-start::before  { background: #e91e63; }
+.gb-theme-birthday .gb-finale::before { content: 'CAKE!'; background: #9c27b0; }
+.gb-theme-birthday .gb-locked { filter: grayscale(.22) brightness(.98); opacity: .82; }
+.gb-theme-birthday .gb-modal-box {
+  background: #2a1230; color: #f6e7f4;
+  border-color: rgba(255,213,79,.3);
+}
+.gb-theme-birthday .gb-modal-sub { color: rgba(246,231,244,.72); }
+.gb-theme-birthday .gb-modal-body .card-label { background: rgba(233,30,99,.2); color: #ffadcf; }
+.gb-theme-birthday .gb-modal-body .card-label.accent { background: rgba(255,193,7,.22); color: #ffe39a; }
+.gb-theme-birthday .gb-modal-body .rich-content blockquote { border-left-color: #e91e63; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CANDY LAND — full-page candy-forest theme
+   Keeps the classic striped lollipop Start/Finish and serpentine path, but now
+   the whole page is a candy world: rainbow arch, cotton-candy clouds, drifting
+   sweets and a candy forest along the horizon.
+   ════════════════════════════════════════════════════════════════════════════ */
+body.gb-page-candyland {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255,107,157,.18), transparent 30%),
+    radial-gradient(circle at 84% 20%, rgba(91,192,255,.18), transparent 32%),
+    radial-gradient(circle at 50% 98%, rgba(124,217,87,.16), transparent 42%),
+    linear-gradient(180deg, #fff0f6 0%, #fff6e6 46%, #eafaff 100%) !important;
+  background-attachment: fixed !important;
+  color: #7a3358; min-height: 100vh;
+}
+body.gb-page-candyland .seq-container { position: relative; z-index: 2; }
+body.gb-page-candyland .seq-title {
+  color: #d6336c; text-shadow: 0 2px 8px rgba(255,255,255,.75), 0 0 6px rgba(255,107,157,.3);
+}
+body.gb-page-candyland .progress-indicator, body.gb-page-candyland .seq-timer { color: #b03a6b; }
+.gb-scene-candyland { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.gb-scene-candyland .gb-rainbow {
+  position: absolute; top: -28%; left: 50%; transform: translateX(-50%);
+  width: 150%; aspect-ratio: 2 / 1; border-radius: 50%; z-index: 1; opacity: .62;
+  background: radial-gradient(closest-side,
+     transparent 0 56%, #ff6b9d 56% 62%, #ffa24d 62% 68%, #ffe24d 68% 74%,
+     #7ed957 74% 80%, #5bc0ff 80% 86%, #c084fc 86% 92%, transparent 92%);
+}
+/* Keep locked candy tiles colourful (not dull grey) like the other themes. */
+.gb-theme-candyland .gb-locked { filter: grayscale(.22) brightness(.98); opacity: .82; }
+.gb-scene-candyland .gb-clouds {
+  position: absolute; top: 4%; left: 0; right: 0; height: 46%; z-index: 2; opacity: .85;
+  background-image:
+    radial-gradient(46px 20px at 14% 26%, #ffd1e6 60%, transparent 62%),
+    radial-gradient(60px 26px at 18% 31%, #ffe0ef 60%, transparent 62%),
+    radial-gradient(42px 16px at 22% 28%, #ffd1e6 60%, transparent 62%),
+    radial-gradient(46px 20px at 70% 16%, #d9ecff 60%, transparent 62%),
+    radial-gradient(62px 26px at 75% 21%, #eaf4ff 60%, transparent 62%);
+  animation: gbCloudDrift 30s ease-in-out infinite alternate;
+}
+.gb-scene-candyland .gb-skyline {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 210px; z-index: 3;
+  background: url("../img/candy-forest.svg") repeat-x bottom center; background-size: auto 210px;
+  filter: drop-shadow(0 6px 10px rgba(150,70,110,.22));
+}
+/* Drifting sweets (reuses the confetti fall/sway keyframes). */
+.gb-scene-candyland .gb-sprinkle {
+  position: absolute; left: -20px; right: -20px; top: -300px; bottom: -20px; z-index: 2;
+  animation: gbConfettiFall linear infinite, gbConfettiSway ease-in-out infinite alternate;
+}
+.gb-scene-candyland .gb-sprinkle-far {
+  --gb-conf-h: 280px; background-size: 280px 280px; opacity: .6; animation-duration: 17s, 13s;
+  background-image:
+    radial-gradient(3px 3px at 20px 30px, #ff6b9d, transparent),
+    radial-gradient(3px 3px at 130px 90px, #5bc0ff, transparent),
+    radial-gradient(2.5px 2.5px at 70px 170px, #ffd23f, transparent),
+    radial-gradient(3px 3px at 190px 50px, #c084fc, transparent),
+    radial-gradient(2.5px 2.5px at 230px 140px, #7ed957, transparent);
+}
+.gb-scene-candyland .gb-sprinkle-mid {
+  --gb-conf-h: 340px; background-size: 340px 340px; opacity: .75; animation-duration: 11s, 9s;
+  background-image:
+    radial-gradient(3.5px 3.5px at 40px 60px, #fb923c, transparent),
+    radial-gradient(3px 3px at 160px 20px, #ff6b9d, transparent),
+    radial-gradient(3.5px 3.5px at 110px 150px, #5bc0ff, transparent),
+    radial-gradient(3px 3px at 250px 110px, #ffd23f, transparent),
+    radial-gradient(3.5px 3.5px at 300px 210px, #c084fc, transparent),
+    radial-gradient(3px 3px at 70px 290px, #7ed957, transparent);
+}
+.gb-scene-candyland .gb-sprinkle-near {
+  --gb-conf-h: 420px; background-size: 420px 420px; opacity: .9; animation-duration: 7s, 5.5s; filter: blur(.3px);
+  background-image:
+    radial-gradient(4.5px 4.5px at 60px 40px, #ff6b9d, transparent),
+    radial-gradient(5px 5px at 220px 130px, #5bc0ff, transparent),
+    radial-gradient(4px 4px at 340px 70px, #ffd23f, transparent),
+    radial-gradient(4.5px 4.5px at 140px 230px, #c084fc, transparent),
+    radial-gradient(5px 5px at 380px 330px, #7ed957, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-scene-candyland .gb-clouds, .gb-scene-candyland .gb-sprinkle { animation: none; }
+}
+
+/* On the narrow / portrait layout the JS re-chunks to 3 tiles per row; the
+   stagger still applies, but trim the vertical offset so it doesn't overflow. */
+@media (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .gb-theme-winter   .gb-row .gb-tile,
+  .gb-theme-spooky   .gb-row .gb-tile,
+  .gb-theme-pool     .gb-row .gb-tile,
+  .gb-theme-birthday .gb-row .gb-tile { top: 0 !important; }
+}
+
+/* ── Interactive: suspect chip in the header ─────────────────────────────── */
+.seq-suspect-chip {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .35rem .7rem; border-radius: 20px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+  font-size: .85rem; color: var(--text-color, #e0e0e0);
+}
+.seq-suspect-name { font-weight: 600; }
+.seq-card-btn {
+  background: var(--btn-color, #6c63ff); color: var(--btn-text, #fff);
+  border: none; border-radius: 14px; padding: .3rem .7rem;
+  font-size: .8rem; font-family: inherit; cursor: pointer;
+}
+.seq-card-btn:hover { filter: brightness(1.12); }
+
+/* ── Interactive: suspect-selection stage ───────────────────────────────── */
+.suspect-select {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px; overflow: hidden; margin: 0 auto; max-width: 880px;
+}
+.suspect-select .lobby-file-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .7rem 1.1rem; background: rgba(0,0,0,.25);
+  font-size: .78rem; letter-spacing: .08em; font-weight: 700;
+}
+.suspect-select .ss-body { padding: 1.5rem; }
+.suspect-select h2 { margin: 0 0 .4rem; }
+.ss-progress {
+  display: inline-block; margin: .9rem 0 1.2rem; padding: .4rem .9rem;
+  border-radius: 20px; background: rgba(108,99,255,.16);
+  border: 1px solid rgba(108,99,255,.35); font-weight: 600; font-size: .9rem;
+}
+.ss-grid {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+.ss-card-form { margin: 0; }
+.ss-card {
+  width: 100%; display: flex; flex-direction: column; align-items: center;
+  gap: .5rem; padding: 1rem .75rem; cursor: pointer; text-align: center;
+  background: rgba(255,255,255,.04); color: var(--text-color, #e0e0e0);
+  border: 2px solid rgba(255,255,255,.12); border-radius: 14px;
+  font-family: inherit; transition: border-color .15s, transform .1s, background .15s;
+}
+.ss-card:hover:not(:disabled) { border-color: var(--accent, #ff6b6b); transform: translateY(-2px); }
+.ss-card-mine { border-color: #4ade80; background: rgba(74,222,128,.12); }
+.ss-card-taken { opacity: .45; cursor: not-allowed; }
+.ss-card-img {
+  width: 84px; height: 84px; border-radius: 50%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.3); font-size: 2rem;
+}
+.ss-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.ss-card-name { font-weight: 600; }
+.ss-card-desc { font-size: .78rem; color: rgba(255,255,255,.55); line-height: 1.3; }
+.ss-tag { font-size: .72rem; padding: .15rem .55rem; border-radius: 12px; font-weight: 600; }
+.ss-tag-open  { background: rgba(108,99,255,.2); color: #c7c2ff; }
+.ss-tag-mine  { background: rgba(74,222,128,.2); color: #86efac; }
+.ss-tag-taken { background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); }
+.ss-host-actions { margin-top: 1.5rem; text-align: center; }
+.ss-host-actions .lobby-btn-start[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* ── Interactive: group accusation vote ─────────────────────────────────── */
+.ix-vote { margin-top: 1.5rem; }
+.ix-vote-count { font-weight: 600; }
+.ix-vote-options { display: flex; flex-direction: column; gap: .55rem; margin: 1rem 0 1.25rem; text-align: left; }
+.ix-vote-option {
+  display: flex; align-items: center; gap: .65rem; padding: .7rem .9rem;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 10px;
+  background: rgba(255,255,255,.04); cursor: pointer;
+}
+.ix-vote-option:hover { border-color: var(--accent, #ff6b6b); }
+.ix-vote-name { font-weight: 500; }
+.ix-vote-fail { border-color: rgba(248,113,113,.4); }
+.ix-fail-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin: 1rem 0 .5rem; }
+.ix-fail-actions form { margin: 0; }
+.ix-result { font-size: 1.05rem; font-weight: 600; }
+.ix-result-win  { color: #4ade80; }
+.ix-result-lose { color: #fca5a5; }
+.finale-card-failed { box-shadow: 0 0 40px rgba(248,113,113,.15); }
+.result-card-failed { background: linear-gradient(160deg, #2a1820, #1b1018); }
+
+/* Suspect-clue evidence + pop-up header */
+.ev-card-suspect .ev-tag-text { color: #c7c2ff; }
+.sol-head, .sc-pop-head {
+  padding: 1rem 1.25rem; font-weight: 700; font-size: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.1);
 }

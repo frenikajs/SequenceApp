@@ -1,0 +1,135 @@
+HOW TO PLAY — WHODUNNIT MYSTERY
+================================
+
+GOAL
+----
+You're a detective. Your job is to study all the evidence, narrow down
+your list of suspects (and weapons, rooms, or other categories), then
+make your Accusation at the bottom of the page. Get every category
+right to close the case.
+
+
+STARTING THE GAME
+-----------------
+Enter the start code you were given to unlock the case. Once entered,
+the full investigation opens up.
+
+
+CHARACTER CARDS
+---------------
+At the top of the page you'll see rows of cards — Suspects, Weapons,
+Rooms, or whatever categories this mystery uses.
+
+  • Tap any card image to ENLARGE it for a closer look.
+  • Tap outside the enlarged image (or the X) to close it.
+
+
+CASE FILES (Evidence)
+---------------------
+All the clues and evidence are listed below the character cards as
+collapsible Case Files.
+
+  • Tap a Case File header to EXPAND it and read the evidence inside.
+  • Tap the header again to COLLAPSE it.
+  • Work through all the files — every detail matters.
+
+NEED A HINT?
+  If you're stuck on a piece of evidence, look for the
+  "💡 Need a hint?" button inside that Case File.
+  • Tap it to REVEAL the hint.
+  • Tap it again to HIDE it.
+
+
+DETECTIVE'S NOTEPAD
+-------------------
+Tap the 📋 Notepad button (floating at the bottom of the screen) to
+open your logic grid. Use it to track what you've ruled in or out.
+
+HOW THE GRID WORKS:
+  • Tap a cell ONCE     — marks ✗  (Ruled out / eliminated)
+  • Tap a cell TWICE    — marks ●  (Confirmed / still in play)
+  • Tap a cell THREE TIMES — clears the mark
+
+Your notepad saves automatically in your browser — it will still be
+there if you reload the page.
+
+To wipe all your marks and start fresh, tap "Clear notepad" at the
+bottom of the notepad panel.
+
+
+MAKING YOUR ACCUSATION
+----------------------
+When you've studied all the evidence and worked the notepad, scroll
+down to the ACCUSATION section.
+
+  1. Use the dropdown for each category to choose your answer
+     (e.g. Suspect, Weapon, Room).
+  2. Tap "Submit Accusation" to lock it in.
+
+READING THE RESULTS:
+  ✓  (green checkmark) — that category is CORRECT. It locks in and
+     you don't need to change it.
+  ✗  (red X) — that category is WRONG. Update your pick and try again.
+
+You can submit as many times as you need. Partial credit carries over
+between attempts, so correct answers stay locked.
+
+
+EVIDENCE LOCKER
+---------------
+Tap 🗂️ Evidence in the top bar to review any bonus evidence or rewards
+you've unlocked from the case files.
+
+
+HOW TO PLAY BUTTON
+------------------
+Tap ❓ How to Play in the top bar at any time to re-read these
+instructions.
+
+
+RESET
+-----
+Tap ↺ Reset in the top bar to wipe ALL progress and start the
+investigation from the very beginning.
+
+  ⚠ This cannot be undone. Use it only if you want to start over
+    completely.
+
+
+SAVING AND SHARING YOUR RESULT
+-------------------------------
+When the case is solved, a result card appears showing the mystery
+title, your completion time, and whether you used any hints.
+
+  • Tap "📷 Save/Share" to save or share the card image.
+
+  On iPhone/iPad:
+    The native share sheet opens. Choose "Save Image" to add it to
+    your Photos, or pick any app (Messages, Instagram, etc.) to share
+    it directly.
+
+  On Android:
+    The share sheet opens. Choose "Save to device" or pick an app
+    to share it.
+
+  On desktop:
+    The image downloads automatically as a JPEG file. A share link
+    is also copied to your clipboard if sharing isn't supported by
+    your browser.
+
+  • Long-press the card image on mobile to get the standard
+    "Save Image" option directly from your browser.
+
+The result card is yours to keep — share it with friends to show
+off your detective skills!
+
+
+TIPS FOR SOLVING
+----------------
+  • Open every Case File — don't skip any evidence.
+  • Use the Notepad grid to cross off options as you eliminate them.
+  • Mark ● (confirmed) when evidence points strongly to one option.
+  • When all columns except one are crossed out (✗) in a row,
+    that remaining option is your answer for that category.
+  • Only submit your Accusation when you're confident — the ✓/✗
+    feedback will tell you if any part is right.

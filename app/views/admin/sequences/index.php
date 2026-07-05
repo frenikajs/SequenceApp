@@ -22,7 +22,6 @@ ob_start();
           <th>Type</th>
           <th>Status</th>
           <th>Views</th>
-          <th>Clues</th>
           <th>Created</th>
           <th>Actions</th>
         </tr>
@@ -30,7 +29,7 @@ ob_start();
       <tbody>
         <?php if (empty($sequences)): ?>
         <tr>
-          <td colspan="7" class="text-center muted py-8">
+          <td colspan="6" class="text-center muted py-8">
             <?= $search ? 'No sequences match your search.' : 'No sequences yet.' ?>
             <a href="<?= url('admin/sequences/create') ?>">Create your first sequence</a>.
           </td>
@@ -38,16 +37,16 @@ ob_start();
         <?php else: ?>
         <?php foreach ($sequences as $seq): ?>
         <tr>
-          <td>
+          <td data-label="Title">
             <strong><?= e($seq['title']) ?></strong>
             <div class="muted small">/s/<?= e($seq['slug']) ?></div>
           </td>
-          <td>
+          <td data-label="Type">
             <span class="badge badge-<?= $seq['type'] === 'sequential' ? 'blue' : 'purple' ?>">
               <?= e(ucfirst($seq['type'])) ?>
             </span>
           </td>
-          <td>
+          <td data-label="Status">
             <form method="POST" action="<?= url('admin/sequences/' . $seq['id'] . '/publish') ?>">
               <?= csrf_field() ?>
               <button type="submit" class="badge badge-<?= $seq['published'] ? 'green' : 'gray' ?> btn-badge">
@@ -55,14 +54,11 @@ ob_start();
               </button>
             </form>
           </td>
-          <td><?= number_format((int)$seq['view_count']) ?></td>
-          <td>
-            <a href="<?= url('admin/sequences/' . $seq['id'] . '/clues') ?>">
-              Manage clues
-            </a>
-          </td>
-          <td class="small muted"><?= formatDate($seq['created_at'], 'M j, Y') ?></td>
-          <td class="actions">
+          <td data-label="Views"><?= number_format((int)$seq['view_count']) ?></td>
+          <td class="small muted" data-label="Created"><?= formatDate($seq['created_at'], 'M j, Y') ?></td>
+          <td class="col-actions">
+            <div class="actions">
+            <a href="<?= url('admin/sequences/' . $seq['id'] . '/clues') ?>" class="btn btn-blue btn-xs">Manage Clues</a>
             <a href="<?= url('admin/sequences/' . $seq['id'] . '/edit') ?>" class="btn btn-secondary btn-xs">Edit</a>
             <a href="<?= url('s/' . $seq['slug']) ?>" target="_blank" class="btn btn-ghost btn-xs">View ↗</a>
             <form method="POST" action="<?= url('admin/sequences/' . $seq['id'] . '/duplicate') ?>" class="inline">
@@ -73,6 +69,7 @@ ob_start();
               onclick="confirmDelete('<?= url('admin/sequences/' . $seq['id'] . '/delete') ?>','Delete sequence &quot;<?= e(addslashes($seq['title'])) ?>&quot;? This cannot be undone.')">
               Delete
             </button>
+            </div>
           </td>
         </tr>
         <?php endforeach; ?>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="60" viewBox="0 0 300 60">
+  <!-- Repeatable party bunting: a gently drooping string with triangular flags. -->
+  <path d="M0 8 Q150 26 300 8" stroke="#b98" stroke-width="2" fill="none" opacity="0.5"/>
+  <g>
+    <polygon points="6,9 54,15 30,52"  fill="#e91e63"/>
+    <polygon points="60,15 108,19 84,55" fill="#ffc107"/>
+    <polygon points="114,19 162,20 138,56" fill="#00bcd4"/>
+    <polygon points="168,20 216,19 192,56" fill="#9c27b0"/>
+    <polygon points="222,19 270,15 246,55" fill="#8bc34a"/>
+  </g>
+</svg>
